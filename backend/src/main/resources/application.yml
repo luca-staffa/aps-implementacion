@@ -1,0 +1,34 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: fia-backend
+  datasource:
+    url: jdbc:postgresql://localhost:5432/fia
+    username: fia
+    password: fia
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+app:
+  jwt:
+    secret: "fia-violeta-clave-secreta-para-firmar-tokens-jwt-2026-muy-larga"
+    expiracion: 3600000
+    inactivity-timeout: 1800000
+  cors:
+    allowed-origins: "http://localhost:4200"
+
+logging:
+  level:
+    org.springframework.security: INFO

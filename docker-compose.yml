@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: fia-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fia
+      POSTGRES_USER: fia
+      POSTGRES_PASSWORD: fia
+    ports:
+      - "5432:5432"
+    volumes:
+      - fia_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fia -d fia"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  fia_pgdata:

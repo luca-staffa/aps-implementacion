@@ -1,0 +1,58 @@
+# =========================================================
+# Repositorio: Plan 1 - FIA Violeta
+# Unico .gitignore del proyecto (backend Maven + frontend Angular + docs)
+# Los patrones sin "/" inicial aplican a cualquier profundidad.
+# =========================================================
+
+# --- Maven (backend) ---
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+*.class
+
+# --- Node / Angular (frontend) ---
+node_modules/
+dist/
+bazel-out/
+out-tsc/
+.angular/
+coverage/
+connect.lock
+testem.log
+libpeerconnection.log
+.npm
+npm-debug.log
+yarn-error.log
+typings/
+.sass-cache/
+
+# --- Logs ---
+*.log
+
+# --- Entorno y secretos ---
+.env
+*.local
+application-local.yml
+
+# --- IDEs / editores ---
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+.c9/
+*.launch
+*.sublime-workspace
+*.sublime-project
+.history/
+
+# --- Sistema operativo ---
+.DS_Store
+Thumbs.db
+
+# --- Temporales ---
+*.tmp
+*.bak
