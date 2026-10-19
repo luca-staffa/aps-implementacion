@@ -13,6 +13,7 @@ public record DashboardConsolidadoResponse(
             Long eventosCalendario,
             Long sanciones,
             Long pruebasNeumaticos,
+            Long pilotos,
             List<AtributoCategoriaItem> atributos
     ) {
     }

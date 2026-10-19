@@ -38,6 +38,14 @@ public class Temporada {
     public Temporada() {
     }
 
+    public Temporada(Integer anio, String nombre, boolean activa, LocalDate fechaInicio, LocalDate fechaFin) {
+        this.anio = anio;
+        this.nombre = nombre;
+        this.activa = activa;
+        this.fechaInicio = fechaInicio;
+        this.fechaFin = fechaFin;
+    }
+
     public Long getId() {
         return id;
     }

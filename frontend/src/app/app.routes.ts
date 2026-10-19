@@ -31,6 +31,19 @@ export const routes: Routes = [
       import('./features/calendario/calendario.component').then((m) => m.CalendarioComponent),
   },
   {
+    path: 'pilotos',
+    title: 'Pilotos · FIA',
+    canActivate: [authGuard, roleGuard('ADMIN_FIA', 'ADMIN_ESCUDERIA')],
+    loadComponent: () => import('./features/pilotos/pilotos.component').then((m) => m.PilotosComponent),
+  },
+  {
+    path: 'pilotos/publico',
+    title: 'Pilotos · Publico',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/pilotos/pilotos-publicos.component').then((m) => m.PilotosPublicosComponent),
+  },
+  {
     path: 'sanciones',
     title: 'Sanciones · FIA',
     canActivate: [authGuard, roleGuard('ADMIN_FIA', 'ADMIN_ESCUDERIA')],

@@ -92,12 +92,25 @@ export class DashboardComponent {
       visible: this.auth.esAdminFia(),
     },
     {
+      titulo: 'Pilotos',
+      descripcion:
+        'Administra la plantilla de pilotos por escuderia, valida titulares y suplentes, y revisa el estado de cada categoria.',
+      ruta: '/pilotos',
+      visible: this.auth.esAdminFia() || this.auth.esAdminEscuderia(),
+    },
+    {
       titulo: 'Sanciones',
       descripcion: this.auth.esAdminFia()
         ? 'Registra, modifica y elimina sanciones. La confirmacion de "Visto" corresponde a las escuderias.'
         : 'Consulta las sanciones de tu escuderia y confirma la lectura con el boton "Visto".',
       ruta: '/sanciones',
       visible: this.auth.puedeGestionarSanciones(),
+    },
+    {
+      titulo: 'Pilotos publicos',
+      descripcion: 'Consulta la base publica de pilotos con filtros por categoria, temporada y escuderia.',
+      ruta: '/pilotos/publico',
+      visible: true,
     },
     {
       titulo: 'Pruebas de neumaticos',
