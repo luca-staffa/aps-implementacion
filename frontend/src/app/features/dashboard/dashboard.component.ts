@@ -85,6 +85,13 @@ export class DashboardComponent {
       visible: true,
     },
     {
+      titulo: 'Vista consolidada',
+      descripcion:
+        'Consulta el resumen operacional por categoria y temporada con los indicadores clave para la FIA.',
+      ruta: '/dashboard/consolidado',
+      visible: this.auth.esAdminFia(),
+    },
+    {
       titulo: 'Sanciones',
       descripcion: this.auth.esAdminFia()
         ? 'Registra, modifica y elimina sanciones. La confirmacion de "Visto" corresponde a las escuderias.'

@@ -15,6 +15,9 @@ import { AuthService } from './core/auth.service';
 
         <nav class="menu">
           <a routerLink="/dashboard" routerLinkActive="activo">Panel</a>
+          @if (auth.esAdminFia()) {
+            <a routerLink="/dashboard/consolidado" routerLinkActive="activo">Vista consolidada</a>
+          }
           <a routerLink="/calendario" routerLinkActive="activo">Calendario</a>
           @if (auth.puedeGestionarSanciones()) {
             <a routerLink="/sanciones" routerLinkActive="activo">Sanciones</a>

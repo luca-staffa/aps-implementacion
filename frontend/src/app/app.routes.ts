@@ -17,6 +17,13 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
   },
   {
+    path: 'dashboard/consolidado',
+    title: 'Vista consolidada · FIA',
+    canActivate: [authGuard, roleGuard('ADMIN_FIA')],
+    loadComponent: () =>
+      import('./features/dashboard/consolidado.component').then((m) => m.DashboardConsolidadoComponent),
+  },
+  {
     path: 'calendario',
     title: 'Calendario · FIA',
     canActivate: [authGuard],

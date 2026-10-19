@@ -48,6 +48,8 @@ application-local.yml
 *.sublime-workspace
 *.sublime-project
 .history/
+.metals/
+.bloop/
 
 # --- Sistema operativo ---
 .DS_Store
