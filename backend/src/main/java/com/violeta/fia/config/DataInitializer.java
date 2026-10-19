@@ -18,6 +18,7 @@ public class DataInitializer {
     /**
      * Garantiza que existan los roles y las credenciales iniciales con contrasenas
      * correctamente hasheadas, independientemente del contenido de la semilla SQL.
+     * La referencia de categorias y temporadas se carga exclusivamente desde Flyway V2.
      */
     @Bean
     CommandLineRunner inicializarDatos(UsuarioRepository usuarioRepository,

@@ -44,6 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/calendario/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/pruebas-neumaticos/**").permitAll()
+                        .requestMatchers("/api/dashboard/consolidado").hasRole("ADMIN_FIA")
                         .requestMatchers(HttpMethod.POST, "/api/sanciones/*/visto")
                         .hasAnyRole("ADMIN_FIA", "ADMIN_ESCUDERIA", "PUBLICO")
                         .requestMatchers(HttpMethod.POST, "/api/sanciones/**").hasRole("ADMIN_FIA")
