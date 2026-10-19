@@ -3,10 +3,12 @@ package com.violeta.fia.service;
 import com.violeta.fia.domain.Categoria;
 import com.violeta.fia.domain.CategoriaAtributo;
 import com.violeta.fia.domain.CategoriaCatalogo;
+import com.violeta.fia.domain.Temporada;
 import com.violeta.fia.dto.DashboardConsolidadoResponse;
 import com.violeta.fia.repository.CategoriaAtributoRepository;
 import com.violeta.fia.repository.CategoriaCatalogoRepository;
 import com.violeta.fia.repository.EventoCalendarioRepository;
+import com.violeta.fia.repository.PilotoRepository;
 import com.violeta.fia.repository.SancionRepository;
 import com.violeta.fia.repository.TemporadaRepository;
 import org.springframework.stereotype.Service;
@@ -23,17 +25,20 @@ public class DashboardConsolidadoService {
     private final TemporadaRepository temporadaRepository;
     private final EventoCalendarioRepository eventoCalendarioRepository;
     private final SancionRepository sancionRepository;
+    private final PilotoRepository pilotoRepository;
 
     public DashboardConsolidadoService(CategoriaCatalogoRepository categoriaCatalogoRepository,
                                        CategoriaAtributoRepository categoriaAtributoRepository,
                                        TemporadaRepository temporadaRepository,
                                        EventoCalendarioRepository eventoCalendarioRepository,
-                                       SancionRepository sancionRepository) {
+                                       SancionRepository sancionRepository,
+                                       PilotoRepository pilotoRepository) {
         this.categoriaCatalogoRepository = categoriaCatalogoRepository;
         this.categoriaAtributoRepository = categoriaAtributoRepository;
         this.temporadaRepository = temporadaRepository;
         this.eventoCalendarioRepository = eventoCalendarioRepository;
         this.sancionRepository = sancionRepository;
+        this.pilotoRepository = pilotoRepository;
     }
 
     @Transactional(readOnly = true)
@@ -55,6 +60,8 @@ public class DashboardConsolidadoService {
             long sanciones = sancionRepository.findAll().stream()
                     .filter(sancion -> sancion.getCategoria() != null && sancion.getCategoria().name().equals(categoriaCatalogo.getCodigo()))
                     .count();
+            long pilotos = pilotoRepository.findByActivoTrueAndCategoriaIdAndTemporadaIdOrderByApellidoAsc(
+                    categoriaCatalogo.getId(), temporadaRepository.findByAnio(temporadaActual).map(Temporada::getId).orElse(null)).stream().count();
 
             items.add(new DashboardConsolidadoResponse.CategoriaDashboardItem(
                     categoriaCatalogo.getId(),
@@ -64,6 +71,7 @@ public class DashboardConsolidadoService {
                     eventos,
                     sanciones,
                     0L,
+                    pilotos,
                     atributos.stream()
                             .map(atributo -> new DashboardConsolidadoResponse.AtributoCategoriaItem(
                                     atributo.getClave(),

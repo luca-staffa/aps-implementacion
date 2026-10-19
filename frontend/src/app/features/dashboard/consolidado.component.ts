@@ -77,6 +77,10 @@ import {
               <span>Pruebas</span>
               <strong>{{ categoria.pruebasNeumaticos }}</strong>
             </div>
+            <div class="kpi">
+              <span>Pilotos</span>
+              <strong>{{ categoria.pilotos }}</strong>
+            </div>
           </div>
 
           @if (categoria.atributos.length > 0) {

@@ -19,9 +19,13 @@ import { AuthService } from './core/auth.service';
             <a routerLink="/dashboard/consolidado" routerLinkActive="activo">Vista consolidada</a>
           }
           <a routerLink="/calendario" routerLinkActive="activo">Calendario</a>
+          @if (auth.esAdminFia() || auth.esAdminEscuderia()) {
+            <a routerLink="/pilotos" routerLinkActive="activo">Pilotos</a>
+          }
           @if (auth.puedeGestionarSanciones()) {
             <a routerLink="/sanciones" routerLinkActive="activo">Sanciones</a>
           }
+          <a routerLink="/pilotos/publico" routerLinkActive="activo">Pilotos publicos</a>
           <a routerLink="/pruebas-neumaticos" routerLinkActive="activo">Pruebas de neumaticos</a>
         </nav>
 
