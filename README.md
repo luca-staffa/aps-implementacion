@@ -1,6 +1,6 @@
-# FIA - Codigo Sprint 1 (Comision Violeta - implementadora)
+# FIA - Codigo Sprint 2 (Comision Violeta - implementadora)
 
-Repositorio del Sprint 1 del proyecto **FIA** (Enunciado 1, APS 2026). Incluye el backend
+Repositorio del Sprint 2 del proyecto **FIA** (Enunciado 1, APS 2026). Incluye el backend
 REST, el frontend web, la base PostgreSQL y los datos semilla.
 
 ## Estructura
@@ -70,24 +70,14 @@ npm start             # http://localhost:4200
 | `admin.escuderia` | `Password123!` | `ADMIN_ESCUDERIA` |
 | `publico`         | `Password123!` | `PUBLICO`         |
 
-## Alcance funcional del Sprint 1
-
-- **US4 - Seguridad y RBAC:** Spring Security + JWT con expiracion absoluta y por inactividad,
-  BCrypt, 3 perfiles, 401/403, guards e interceptor Angular.
-- **US3 - Sanciones:** ABM + consulta, validacion piloto-o-escuderia (selectores poblados desde
-  `GET /api/usuarios`), registro de "Visto" (fecha + usuario).
-- **US2 - Calendario:** 4 categorias agrupadas y orden cronologico, filtros, exportacion
-  PDF/ICS identica a la pantalla y estado vacio.
-- **US7 - Pruebas de neumaticos:** dos fechas anuales, resultados por escuderia, solo lectura.
-
-El detalle de sprint, retrospectiva y planificacion del Sprint 2 esta en `ENTREGA Sprint 1 FIA - Violeta.md`.
 
 ## Tests
 
 ```bash
-cd backend && mvn test    # o ./mvnw test -> 31 tests
+cd backend && mvn test    # o ./mvnw test -> 70 tests
 ```
 
 Cubren autenticacion (login, registro, 401/403), sanciones (ABM, validacion, permisos y "Visto"),
-pruebas de neumaticos, filtros de calendario y expiracion por inactividad. Usan H2 en memoria
-(perfil `test`), Flyway deshabilitado y `ddl-auto=create-drop`.
+pilotos (ABM, limites y permisos), pruebas de neumaticos, filtros de calendario (categoria y año),
+paridad entre la vista consolidada y el calendario y expiracion por inactividad. Usan H2 en memoria
+(perfil `test`) con Flyway habilitado y `ddl-auto=validate`.

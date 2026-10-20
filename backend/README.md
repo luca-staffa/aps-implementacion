@@ -83,7 +83,10 @@ Si no tenes Maven instalado, el proyecto incluye el Maven Wrapper:
 | POST | `/api/auth/register` | Publico |
 | POST | `/api/auth/login` | Publico |
 | GET | `/api/auth/me` | Autenticado |
+| PUT | `/api/auth/me` | Autenticado (solo los datos propios) |
 | POST | `/api/auth/logout` | Autenticado |
+
+`PUT /api/auth/me` permite actualizar `email` y `telefono` del usuario autenticado. El email debe tener formato valido y ser unico; el telefono se valida con el patron `^\+?[0-9 ()-]{7,20}$`.
 
 ### Usuarios
 
@@ -92,24 +95,32 @@ Si no tenes Maven instalado, el proyecto incluye el Maven Wrapper:
 | GET | `/api/usuarios` | `ADMIN_FIA` |
 | GET | `/api/usuarios/{id}` | `ADMIN_FIA` |
 
-Se usa para poblar los selectores de piloto y escuderia al registrar sanciones.
+### Escuderias
+
+| Metodo | Ruta | Acceso |
+| --- | --- | --- |
+| GET | `/api/escuderias` | `ADMIN_FIA`, `ADMIN_ESCUDERIA` |
+
+Se usa, junto con `GET /api/pilotos`, para poblar los selectores de piloto y escuderia al registrar sanciones.
 
 ### Sanciones
 
 | Metodo | Ruta | Acceso |
 | --- | --- | --- |
-| GET | `/api/sanciones?categoria=&desde=&hasta=` | `ADMIN_FIA`, `ADMIN_ESCUDERIA`, `PUBLICO` |
-| GET | `/api/sanciones/{id}` | `ADMIN_FIA`, `ADMIN_ESCUDERIA`, `PUBLICO` |
+| GET | `/api/sanciones?categoria=&desde=&hasta=&pilotoId=&escuderiaId=&eventoId=` | `ADMIN_FIA` |
+| GET | `/api/sanciones/{id}` | `ADMIN_FIA` |
 | POST | `/api/sanciones` | `ADMIN_FIA` |
 | PUT | `/api/sanciones/{id}` | `ADMIN_FIA` |
 | DELETE | `/api/sanciones/{id}` | `ADMIN_FIA` |
-| POST | `/api/sanciones/{id}/visto` | Autenticado |
+| POST | `/api/sanciones/{id}/visto` | `ADMIN_FIA` |
+
+El modulo de sanciones esta restringido al Administrador del sistema (`ADMIN_FIA`). Las sanciones requieren `categoria`, `eventoId` (carrera), `motivo`, `fecha` y `tipo` (penalidad), y se asocian a un piloto (`pilotoId`, entidad `piloto`) o a una escuderia (`escuderiaId`, entidad `escuderia`). El `DELETE` es una baja logica: la sancion deja de listarse pero permanece en la base de datos. Los filtros `pilotoId`, `escuderiaId` y `eventoId` permiten consultar el historial del piloto, la escuderia o la carrera.
 
 ### Calendario
 
 | Metodo | Ruta | Acceso |
 | --- | --- | --- |
-| GET | `/api/calendario/eventos?categoria=&desde=&hasta=&circuito=` | Publico |
+| GET | `/api/calendario/eventos?categoria=&anio=&desde=&hasta=&circuito=` | Publico |
 | GET | `/api/calendario/eventos/{id}` | Publico |
 | GET | `/api/calendario/eventos/export.pdf` | Publico |
 | GET | `/api/calendario/eventos/export.ics` | Publico |

@@ -37,8 +37,11 @@ public class SancionController {
     public ResponseEntity<List<SancionResponse>> listar(
             @RequestParam(required = false) Categoria categoria,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
-        return ResponseEntity.ok(sancionService.listar(categoria, desde, hasta));
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
+            @RequestParam(required = false) Long pilotoId,
+            @RequestParam(required = false) Long escuderiaId,
+            @RequestParam(required = false) Long eventoId) {
+        return ResponseEntity.ok(sancionService.listar(categoria, desde, hasta, pilotoId, escuderiaId, eventoId));
     }
 
     @GetMapping("/{id}")

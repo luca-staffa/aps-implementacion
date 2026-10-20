@@ -29,10 +29,11 @@ public class CalendarioController {
     @GetMapping
     public ResponseEntity<List<EventoResponse>> listar(
             @RequestParam(required = false) Categoria categoria,
+            @RequestParam(required = false) Integer anio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
             @RequestParam(required = false) String circuito) {
-        return ResponseEntity.ok(calendarioService.listar(categoria, desde, hasta, circuito));
+        return ResponseEntity.ok(calendarioService.listar(categoria, anio, desde, hasta, circuito));
     }
 
     @GetMapping("/{id}")
@@ -43,10 +44,11 @@ public class CalendarioController {
     @GetMapping("/export.pdf")
     public ResponseEntity<byte[]> exportarPdf(
             @RequestParam(required = false) Categoria categoria,
+            @RequestParam(required = false) Integer anio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
             @RequestParam(required = false) String circuito) {
-        byte[] pdf = calendarioService.exportarPdf(categoria, desde, hasta, circuito);
+        byte[] pdf = calendarioService.exportarPdf(categoria, anio, desde, hasta, circuito);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"calendario.pdf\"")
                 .contentType(MediaType.APPLICATION_PDF)
@@ -56,10 +58,11 @@ public class CalendarioController {
     @GetMapping("/export.ics")
     public ResponseEntity<byte[]> exportarIcs(
             @RequestParam(required = false) Categoria categoria,
+            @RequestParam(required = false) Integer anio,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta,
             @RequestParam(required = false) String circuito) {
-        byte[] ics = calendarioService.exportarIcs(categoria, desde, hasta, circuito);
+        byte[] ics = calendarioService.exportarIcs(categoria, anio, desde, hasta, circuito);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"calendario.ics\"")
                 .contentType(MediaType.parseMediaType("text/calendar"))

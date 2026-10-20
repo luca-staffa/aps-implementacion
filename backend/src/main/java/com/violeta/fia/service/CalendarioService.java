@@ -27,8 +27,11 @@ public class CalendarioService {
     }
 
     @Transactional(readOnly = true)
-    public List<EventoResponse> listar(Categoria categoria, LocalDate desde, LocalDate hasta, String circuito) {
-        return eventoRepository.buscarConFiltros(categoria, desde, hasta, circuito)
+    public List<EventoResponse> listar(Categoria categoria, Integer anio, LocalDate desde, LocalDate hasta, String circuito) {
+        String circuitoLike = circuito == null || circuito.isBlank()
+                ? null
+                : "%" + circuito.trim().toLowerCase() + "%";
+        return eventoRepository.buscarConFiltros(categoria, anio, desde, hasta, circuitoLike)
                 .stream().map(this::aResponse).toList();
     }
 
@@ -38,8 +41,8 @@ public class CalendarioService {
     }
 
     @Transactional(readOnly = true)
-    public byte[] exportarPdf(Categoria categoria, LocalDate desde, LocalDate hasta, String circuito) {
-        List<EventoResponse> eventos = listar(categoria, desde, hasta, circuito);
+    public byte[] exportarPdf(Categoria categoria, Integer anio, LocalDate desde, LocalDate hasta, String circuito) {
+        List<EventoResponse> eventos = listar(categoria, anio, desde, hasta, circuito);
         List<String> lineas = eventos.stream()
                 .map(e -> e.fechaInicio() + " | " + e.categoria() + " | " + e.nombre()
                         + " | " + (e.circuito() != null ? e.circuito() : "-"))
@@ -48,8 +51,8 @@ public class CalendarioService {
     }
 
     @Transactional(readOnly = true)
-    public byte[] exportarIcs(Categoria categoria, LocalDate desde, LocalDate hasta, String circuito) {
-        List<EventoResponse> eventos = listar(categoria, desde, hasta, circuito);
+    public byte[] exportarIcs(Categoria categoria, Integer anio, LocalDate desde, LocalDate hasta, String circuito) {
+        List<EventoResponse> eventos = listar(categoria, anio, desde, hasta, circuito);
         String ahora = LocalDateTime.now().format(FORMATO_TIMESTAMP);
 
         StringBuilder sb = new StringBuilder();

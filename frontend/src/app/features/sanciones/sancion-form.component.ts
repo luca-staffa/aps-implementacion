@@ -20,8 +20,18 @@ import {
   Validators,
 } from '@angular/forms';
 
-import { CATEGORIAS, Sancion, SancionPayload, TIPOS_SANCION, Usuario } from '../../core/models';
-import { UsuariosService } from '../../core/usuarios.service';
+import { CalendarioService } from '../../core/calendario.service';
+import { EscuderiasService } from '../../core/escuderias.service';
+import {
+  CATEGORIAS,
+  Escuderia,
+  EventoCalendario,
+  Sancion,
+  SancionPayload,
+  TIPOS_SANCION,
+  coincideCategoria,
+} from '../../core/models';
+import { Piloto, PilotosService } from '../../core/pilotos.service';
 
 /** Exige que al menos uno de los dos campos tenga valor. */
 function alMenosUno(campoA: string, campoB: string): ValidatorFn {
@@ -60,15 +70,28 @@ function alMenosUno(campoA: string, campoB: string): ValidatorFn {
           </div>
 
           <div>
-            <label for="s-tipo">Tipo</label>
+            <label for="s-carrera">Carrera</label>
+            <select id="s-carrera" formControlName="eventoId">
+              <option [ngValue]="null">Selecciona una carrera</option>
+              @for (evento of eventosFiltrados(); track evento.id) {
+                <option [ngValue]="evento.id">{{ etiquetaEvento(evento) }}</option>
+              }
+            </select>
+            @if (mostrarError('eventoId')) {
+              <p class="error-campo">La carrera es obligatoria.</p>
+            }
+          </div>
+
+          <div>
+            <label for="s-tipo">Penalidad</label>
             <select id="s-tipo" formControlName="tipo">
-              <option value="">Selecciona un tipo</option>
+              <option value="">Selecciona una penalidad</option>
               @for (tipo of tipos; track tipo) {
                 <option [value]="tipo">{{ tipo }}</option>
               }
             </select>
             @if (mostrarError('tipo')) {
-              <p class="error-campo">El tipo es obligatorio.</p>
+              <p class="error-campo">La penalidad es obligatoria.</p>
             }
           </div>
 
@@ -76,8 +99,8 @@ function alMenosUno(campoA: string, campoB: string): ValidatorFn {
             <label for="s-piloto">Piloto</label>
             <select id="s-piloto" formControlName="pilotoId">
               <option [ngValue]="null">Sin piloto</option>
-              @for (usuario of pilotos(); track usuario.id) {
-                <option [ngValue]="usuario.id">{{ etiquetaUsuario(usuario) }}</option>
+              @for (piloto of pilotos(); track piloto.id) {
+                <option [ngValue]="piloto.id">{{ etiquetaPiloto(piloto) }}</option>
               }
             </select>
           </div>
@@ -86,8 +109,8 @@ function alMenosUno(campoA: string, campoB: string): ValidatorFn {
             <label for="s-escuderia">Escuderia</label>
             <select id="s-escuderia" formControlName="escuderiaId">
               <option [ngValue]="null">Sin escuderia</option>
-              @for (usuario of escuderias(); track usuario.id) {
-                <option [ngValue]="usuario.id">{{ etiquetaUsuario(usuario) }}</option>
+              @for (escuderia of escuderias(); track escuderia.id) {
+                <option [ngValue]="escuderia.id">{{ escuderia.nombre }}</option>
               }
             </select>
           </div>
@@ -152,7 +175,9 @@ function alMenosUno(campoA: string, campoB: string): ValidatorFn {
 })
 export class SancionFormComponent implements OnInit, OnChanges {
   private readonly fb = inject(FormBuilder);
-  private readonly usuariosService = inject(UsuariosService);
+  private readonly pilotosService = inject(PilotosService);
+  private readonly escuderiasService = inject(EscuderiasService);
+  private readonly calendarioService = inject(CalendarioService);
 
   @Input() sancion: Sancion | null = null;
   @Output() guardar = new EventEmitter<SancionPayload>();
@@ -162,16 +187,15 @@ export class SancionFormComponent implements OnInit, OnChanges {
   readonly tipos = TIPOS_SANCION;
   enviado = false;
 
-  readonly usuarios = signal<Usuario[]>([]);
+  readonly pilotos = signal<Piloto[]>([]);
+  readonly escuderias = signal<Escuderia[]>([]);
+  readonly eventos = signal<EventoCalendario[]>([]);
   readonly errorUsuarios = signal('');
-  readonly pilotos = computed(() => this.usuarios());
-  readonly escuderias = computed(() =>
-    this.usuarios().filter((usuario) => usuario.rol === 'ADMIN_ESCUDERIA'),
-  );
 
   readonly form = this.fb.group(
     {
       categoria: ['', Validators.required],
+      eventoId: this.fb.control<number | null>(null, Validators.required),
       pilotoId: this.fb.control<number | null>(null),
       escuderiaId: this.fb.control<number | null>(null),
       motivo: ['', Validators.required],
@@ -182,8 +206,17 @@ export class SancionFormComponent implements OnInit, OnChanges {
     { validators: [alMenosUno('pilotoId', 'escuderiaId')] },
   );
 
+  readonly eventosFiltrados = computed(() => {
+    const categoria = this.form.controls.categoria.value;
+    return this.eventos().filter(
+      (evento) => !categoria || coincideCategoria(categoria, evento.categoria),
+    );
+  });
+
   ngOnInit(): void {
-    this.cargarUsuarios();
+    this.cargarPilotos();
+    this.cargarEscuderias();
+    this.cargarEventos();
   }
 
   ngOnChanges(cambios: SimpleChanges): void {
@@ -191,6 +224,7 @@ export class SancionFormComponent implements OnInit, OnChanges {
       this.enviado = false;
       this.form.reset({
         categoria: this.sancion?.categoria ?? '',
+        eventoId: this.sancion?.eventoId ?? null,
         pilotoId: this.sancion?.pilotoId ?? null,
         escuderiaId: this.sancion?.escuderiaId ?? null,
         motivo: this.sancion?.motivo ?? '',
@@ -217,6 +251,7 @@ export class SancionFormComponent implements OnInit, OnChanges {
     const valores = this.form.getRawValue();
     const payload: SancionPayload = {
       categoria: valores.categoria ?? '',
+      eventoId: valores.eventoId ?? null,
       pilotoId: valores.pilotoId ?? null,
       escuderiaId: valores.escuderiaId ?? null,
       motivo: (valores.motivo ?? '').trim(),
@@ -228,15 +263,34 @@ export class SancionFormComponent implements OnInit, OnChanges {
     this.guardar.emit(payload);
   }
 
-  etiquetaUsuario(usuario: Usuario): string {
-    const nombre = [usuario.nombre, usuario.apellido].filter(Boolean).join(' ');
-    return `${nombre} (${usuario.username}) - ${usuario.rol}`;
+  etiquetaPiloto(piloto: Piloto): string {
+    return `${piloto.nombre} ${piloto.apellido} (#${piloto.numero})`;
   }
 
-  private cargarUsuarios(): void {
-    this.usuariosService.listar().subscribe({
-      next: (usuarios) => this.usuarios.set(usuarios ?? []),
-      error: () => this.errorUsuarios.set('No se pudieron cargar los usuarios.'),
+  etiquetaEvento(evento: EventoCalendario): string {
+    const fecha = evento.fechaInicio ?? '';
+    const circuito = evento.circuito ? ` - ${evento.circuito}` : '';
+    return `${evento.categoria} | ${evento.nombre ?? 'Carrera'} | ${fecha}${circuito}`;
+  }
+
+  private cargarPilotos(): void {
+    this.pilotosService.listar().subscribe({
+      next: (pilotos) => this.pilotos.set(pilotos ?? []),
+      error: () => this.errorUsuarios.set('No se pudieron cargar los pilotos.'),
+    });
+  }
+
+  private cargarEscuderias(): void {
+    this.escuderiasService.listar().subscribe({
+      next: (escuderias) => this.escuderias.set(escuderias ?? []),
+      error: () => this.errorUsuarios.set('No se pudieron cargar las escuderias.'),
+    });
+  }
+
+  private cargarEventos(): void {
+    this.calendarioService.listar().subscribe({
+      next: (eventos) => this.eventos.set(eventos ?? []),
+      error: () => this.errorUsuarios.set('No se pudieron cargar las carreras.'),
     });
   }
 }

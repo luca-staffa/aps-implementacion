@@ -26,16 +26,23 @@ public class Sancion {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "piloto_id")
-    private Usuario piloto;
+    @JoinColumn(name = "piloto_registrado_id")
+    private Piloto piloto;
 
     @ManyToOne
-    @JoinColumn(name = "escuderia_id")
-    private Usuario escuderia;
+    @JoinColumn(name = "escuderia_registrada_id")
+    private Escuderia escuderia;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "categoria", length = 30)
     private Categoria categoria;
+
+    @ManyToOne
+    @JoinColumn(name = "evento_id")
+    private EventoCalendario evento;
+
+    @Column(name = "activo", nullable = false)
+    private boolean activo = true;
 
     @Column(name = "motivo", nullable = false, length = 255)
     private String motivo;
@@ -63,19 +70,19 @@ public class Sancion {
         this.id = id;
     }
 
-    public Usuario getPiloto() {
+    public Piloto getPiloto() {
         return piloto;
     }
 
-    public void setPiloto(Usuario piloto) {
+    public void setPiloto(Piloto piloto) {
         this.piloto = piloto;
     }
 
-    public Usuario getEscuderia() {
+    public Escuderia getEscuderia() {
         return escuderia;
     }
 
-    public void setEscuderia(Usuario escuderia) {
+    public void setEscuderia(Escuderia escuderia) {
         this.escuderia = escuderia;
     }
 
@@ -85,6 +92,22 @@ public class Sancion {
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+
+    public EventoCalendario getEvento() {
+        return evento;
+    }
+
+    public void setEvento(EventoCalendario evento) {
+        this.evento = evento;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     public String getMotivo() {

@@ -73,6 +73,17 @@ class CalendarioFiltrosTest extends BaseIntegrationTest {
     }
 
     @Test
+    void filtraPorAnio() throws Exception {
+        mockMvc.perform(get("/api/calendario/eventos").param("anio", "2032"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
+
+        mockMvc.perform(get("/api/calendario/eventos").param("anio", "2033"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
     void exportaIcsContieneElEvento() throws Exception {
         mockMvc.perform(get("/api/calendario/eventos/export.ics").param("categoria", "F1"))
                 .andExpect(status().isOk())

@@ -3,7 +3,17 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../../core/auth.service';
-import { CATEGORIAS, FiltrosSanciones, Sancion, SancionPayload } from '../../core/models';
+import { CalendarioService } from '../../core/calendario.service';
+import { EscuderiasService } from '../../core/escuderias.service';
+import {
+  CATEGORIAS,
+  Escuderia,
+  EventoCalendario,
+  FiltrosSanciones,
+  Sancion,
+  SancionPayload,
+} from '../../core/models';
+import { Piloto, PilotosService } from '../../core/pilotos.service';
 import { SancionesService } from '../../core/sanciones.service';
 import { SancionFormComponent } from './sancion-form.component';
 
@@ -14,11 +24,8 @@ import { SancionFormComponent } from './sancion-form.component';
   template: `
     <h1>Sanciones</h1>
     <p class="intro">
-      @if (auth.esAdminFia()) {
-        Como Administrador FIA puedes registrar, modificar y eliminar sanciones.
-      } @else {
-        Consulta las sanciones y confirma su lectura con el boton "Visto".
-      }
+      Registra, modifica y elimina sanciones. El modulo esta restringido al Administrador del
+      sistema.
     </p>
 
     <section class="tarjeta filtros">
@@ -29,6 +36,36 @@ import { SancionFormComponent } from './sancion-form.component';
             <option value="">Todas</option>
             @for (categoria of categorias; track categoria.valor) {
               <option [value]="categoria.valor">{{ categoria.etiqueta }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label for="f-piloto">Piloto</label>
+          <select id="f-piloto" [(ngModel)]="filtros.pilotoId" (ngModelChange)="cargar()">
+            <option [ngValue]="null">Todos</option>
+            @for (piloto of pilotos(); track piloto.id) {
+              <option [ngValue]="piloto.id">{{ etiquetaPiloto(piloto) }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label for="f-escuderia">Escuderia</label>
+          <select id="f-escuderia" [(ngModel)]="filtros.escuderiaId" (ngModelChange)="cargar()">
+            <option [ngValue]="null">Todas</option>
+            @for (escuderia of escuderias(); track escuderia.id) {
+              <option [ngValue]="escuderia.id">{{ escuderia.nombre }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label for="f-carrera">Carrera</label>
+          <select id="f-carrera" [(ngModel)]="filtros.eventoId" (ngModelChange)="cargar()">
+            <option [ngValue]="null">Todas</option>
+            @for (evento of eventos(); track evento.id) {
+              <option [ngValue]="evento.id">{{ evento.categoria }} | {{ evento.nombre }} | {{ evento.fechaInicio }}</option>
             }
           </select>
         </div>
@@ -45,9 +82,7 @@ import { SancionFormComponent } from './sancion-form.component';
 
         <div class="acciones">
           <button type="button" class="secundario" (click)="limpiarFiltros()">Limpiar</button>
-          @if (auth.esAdminFia()) {
-            <button type="button" (click)="nueva()">Nueva sancion</button>
-          }
+          <button type="button" (click)="nueva()">Nueva sancion</button>
         </div>
       </div>
     </section>
@@ -77,20 +112,28 @@ import { SancionFormComponent } from './sancion-form.component';
         <thead>
           <tr>
             <th>Categoria</th>
+            <th>Carrera</th>
             <th>Piloto / Escuderia</th>
             <th>Motivo</th>
             <th>Fecha</th>
-            <th>Tipo</th>
-            <th>Visto</th>
-            @if (auth.esAdminFia() || auth.esAdminEscuderia()) {
-              <th>Acciones</th>
-            }
+            <th>Penalidad</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           @for (sancion of sanciones(); track sancion.id) {
             <tr>
               <td>{{ sancion.categoria }}</td>
+              <td>
+                @if (sancion.eventoNombre) {
+                  <div>{{ sancion.eventoNombre }}</div>
+                  @if (sancion.eventoCircuito) {
+                    <div class="detalle">{{ sancion.eventoCircuito }}</div>
+                  }
+                } @else {
+                  <span class="detalle">-</span>
+                }
+              </td>
               <td>
                 @if (sancion.pilotoNombre) {
                   <div>{{ sancion.pilotoNombre }}</div>
@@ -107,29 +150,10 @@ import { SancionFormComponent } from './sancion-form.component';
               </td>
               <td>{{ sancion.fecha | date: 'dd/MM/yyyy' }}</td>
               <td>{{ sancion.tipo }}</td>
-              <td>
-                @if (sancion.cantidadVistas > 0) {
-                  <span class="visto">
-                    {{ sancion.vistas[0].fechaVisto | date: 'dd/MM/yyyy HH:mm' }}
-                    @if (sancion.vistas[0].username) {
-                      · {{ sancion.vistas[0].username }}
-                    }
-                  </span>
-                } @else {
-                  <span class="pendiente">Pendiente</span>
-                }
+              <td class="acciones-fila">
+                <button type="button" class="secundario" (click)="editar(sancion)">Editar</button>
+                <button type="button" class="peligro" (click)="eliminar(sancion)">Eliminar</button>
               </td>
-              @if (auth.esAdminFia() || auth.esAdminEscuderia()) {
-                <td class="acciones-fila">
-                  @if (auth.esAdminFia()) {
-                    <button type="button" class="secundario" (click)="editar(sancion)">Editar</button>
-                    <button type="button" class="peligro" (click)="eliminar(sancion)">Eliminar</button>
-                  }
-                  @if (auth.esAdminEscuderia() && sancion.cantidadVistas === 0) {
-                    <button type="button" (click)="marcarVisto(sancion)">Visto</button>
-                  }
-                </td>
-              }
             </tr>
           }
         </tbody>
@@ -163,16 +187,6 @@ import { SancionFormComponent } from './sancion-form.component';
         gap: 0.4rem;
       }
 
-      .visto {
-        color: #1f8a52;
-        font-size: 0.82rem;
-      }
-
-      .pendiente {
-        color: #b8860b;
-        font-size: 0.82rem;
-      }
-
       table {
         box-shadow: 0 2px 10px rgba(43, 16, 85, 0.08);
         border-radius: 8px;
@@ -183,20 +197,57 @@ import { SancionFormComponent } from './sancion-form.component';
 })
 export class SancionesComponent implements OnInit {
   private readonly servicio = inject(SancionesService);
+  private readonly calendarioService = inject(CalendarioService);
+  private readonly pilotosService = inject(PilotosService);
+  private readonly escuderiasService = inject(EscuderiasService);
   readonly auth = inject(AuthService);
 
   readonly categorias = CATEGORIAS;
   readonly sanciones = signal<Sancion[]>([]);
+  readonly eventos = signal<EventoCalendario[]>([]);
+  readonly pilotos = signal<Piloto[]>([]);
+  readonly escuderias = signal<Escuderia[]>([]);
   readonly cargando = signal(false);
   readonly error = signal('');
   readonly aviso = signal('');
   readonly mostrarFormulario = signal(false);
   readonly enEdicion = signal<Sancion | null>(null);
 
-  filtros: Required<FiltrosSanciones> = { categoria: '', desde: '', hasta: '' };
+  filtros: Required<FiltrosSanciones> = {
+    categoria: '',
+    pilotoId: null,
+    escuderiaId: null,
+    eventoId: null,
+    desde: '',
+    hasta: '',
+  };
 
   ngOnInit(): void {
+    this.cargarEventos();
+    this.cargarPilotos();
+    this.cargarEscuderias();
     this.cargar();
+  }
+
+  cargarEventos(): void {
+    this.calendarioService.listar().subscribe({
+      next: (eventos) => this.eventos.set(eventos ?? []),
+      error: () => this.eventos.set([]),
+    });
+  }
+
+  cargarPilotos(): void {
+    this.pilotosService.listar().subscribe({
+      next: (pilotos) => this.pilotos.set(pilotos ?? []),
+      error: () => this.pilotos.set([]),
+    });
+  }
+
+  cargarEscuderias(): void {
+    this.escuderiasService.listar().subscribe({
+      next: (escuderias) => this.escuderias.set(escuderias ?? []),
+      error: () => this.escuderias.set([]),
+    });
   }
 
   cargar(): void {
@@ -215,7 +266,14 @@ export class SancionesComponent implements OnInit {
   }
 
   limpiarFiltros(): void {
-    this.filtros = { categoria: '', desde: '', hasta: '' };
+    this.filtros = {
+      categoria: '',
+      pilotoId: null,
+      escuderiaId: null,
+      eventoId: null,
+      desde: '',
+      hasta: '',
+    };
     this.cargar();
   }
 
@@ -268,22 +326,16 @@ export class SancionesComponent implements OnInit {
     });
   }
 
-  marcarVisto(sancion: Sancion): void {
-    this.error.set('');
-    this.servicio.marcarVisto(sancion.id).subscribe({
-      next: (visto) => {
-        const fecha = visto?.fechaVisto ?? 'la fecha registrada';
-        const usuario = visto?.username ?? this.auth.nombre();
-        this.aviso.set(`Sancion marcada como vista por ${usuario} (${fecha}).`);
-        this.cargar();
-      },
-      error: () => this.error.set('No se pudo registrar el visto.'),
-    });
+  etiquetaPiloto(piloto: Piloto): string {
+    return `${piloto.nombre} ${piloto.apellido} (#${piloto.numero})`;
   }
 
   private filtrosActuales(): FiltrosSanciones {
     return {
       categoria: this.filtros.categoria || undefined,
+      pilotoId: this.filtros.pilotoId ?? undefined,
+      escuderiaId: this.filtros.escuderiaId ?? undefined,
+      eventoId: this.filtros.eventoId ?? undefined,
       desde: this.filtros.desde || undefined,
       hasta: this.filtros.hasta || undefined,
     };

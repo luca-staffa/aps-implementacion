@@ -49,10 +49,11 @@ import { AuthService } from '../../core/auth.service';
         <div class="nota">
           <p class="titulo-nota">Perfiles disponibles</p>
           <ul>
-            <li><strong>ADMIN_FIA:</strong> alta, edicion y baja de sanciones; calendario completo.</li>
-            <li><strong>ADMIN_ESCUDERIA:</strong> consulta de sanciones y confirmacion de "Visto".</li>
-            <li><strong>PUBLICO:</strong> consulta de calendario y pruebas de neumaticos.</li>
+            <li><strong>ADMIN_FIA:</strong> vista consolidada, alta y edicion de sanciones, pilotos de todas las escuderias.</li>
+            <li><strong>ADMIN_ESCUDERIA:</strong> gestion de los pilotos de su escuderia.</li>
+            <li><strong>PUBLICO:</strong> consulta de calendario, pilotos publicos y pruebas de neumaticos.</li>
           </ul>
+          <p>El calendario, los pilotos publicos y las pruebas pueden consultarse sin iniciar sesion.</p>
         </div>
       </section>
     </div>

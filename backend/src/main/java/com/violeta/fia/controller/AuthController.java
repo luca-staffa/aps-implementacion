@@ -1,5 +1,6 @@
 package com.violeta.fia.controller;
 
+import com.violeta.fia.dto.ActualizarDatosRequest;
 import com.violeta.fia.dto.LoginRequest;
 import com.violeta.fia.dto.LoginResponse;
 import com.violeta.fia.dto.MensajeResponse;
@@ -13,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,6 +44,12 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UsuarioResponse> me(Authentication authentication) {
         return ResponseEntity.ok(usuarioService.buscarPorUsername(authentication.getName()));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UsuarioResponse> actualizarMe(Authentication authentication,
+                                                        @Valid @RequestBody ActualizarDatosRequest request) {
+        return ResponseEntity.ok(usuarioService.actualizarDatos(authentication.getName(), request));
     }
 
     @PostMapping("/logout")

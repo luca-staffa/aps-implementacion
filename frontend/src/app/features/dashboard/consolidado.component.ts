@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { CATEGORIAS } from '../../core/models';
+import { CATEGORIAS, TEMPORADAS } from '../../core/models';
 import {
   DashboardCategoria,
   DashboardConsolidadoResponse,
@@ -35,8 +35,9 @@ import {
         <div>
           <label for="f-temporada">Temporada</label>
           <select id="f-temporada" [(ngModel)]="filtros.temporada" (ngModelChange)="cargar()">
+            <option [ngValue]="null">Todas las temporadas</option>
             @for (temporada of temporadas; track temporada) {
-              <option [value]="temporada">{{ temporada }}</option>
+              <option [ngValue]="temporada">{{ temporada }}</option>
             }
           </select>
         </div>
@@ -61,7 +62,7 @@ import {
               <span class="etiqueta">{{ categoria.codigo }}</span>
               <h2>{{ categoria.nombre }}</h2>
             </div>
-            <div class="temporada">Temporada {{ categoria.temporadaActual }}</div>
+            <div class="temporada">{{ etiquetaTemporada(categoria.temporada) }}</div>
           </div>
 
           <div class="kpis">
@@ -76,6 +77,10 @@ import {
             <div class="kpi">
               <span>Pruebas</span>
               <strong>{{ categoria.pruebasNeumaticos }}</strong>
+            </div>
+            <div class="kpi">
+              <span>Pilotos</span>
+              <strong>{{ categoria.pilotos }}</strong>
             </div>
           </div>
 
@@ -200,14 +205,14 @@ export class DashboardConsolidadoComponent {
   private readonly dashboard = inject(DashboardConsolidadoService);
 
   readonly categorias = CATEGORIAS;
-  readonly temporadas = [2026, 2025, 2024];
+  readonly temporadas = TEMPORADAS;
   readonly cargando = signal(false);
   readonly error = signal('');
   readonly datos = signal<DashboardConsolidadoResponse>({ categorias: [] });
 
-  filtros = {
+  filtros: { categoria: string; temporada: number | null } = {
     categoria: '',
-    temporada: '2026',
+    temporada: null,
   };
 
   readonly resumen = computed<DashboardCategoria[]>(() => this.datos().categorias ?? []);
@@ -223,7 +228,7 @@ export class DashboardConsolidadoComponent {
     this.dashboard
       .listar({
         categoria: this.filtros.categoria || undefined,
-        temporada: this.filtros.temporada || undefined,
+        temporada: this.filtros.temporada,
       })
       .subscribe({
         next: (respuesta) => this.datos.set(respuesta),
@@ -236,7 +241,11 @@ export class DashboardConsolidadoComponent {
   }
 
   limpiarFiltros(): void {
-    this.filtros = { categoria: '', temporada: '2026' };
+    this.filtros = { categoria: '', temporada: null };
     this.cargar();
+  }
+
+  etiquetaTemporada(temporada: number | null): string {
+    return temporada == null ? 'Todas las temporadas' : `Temporada ${temporada}`;
   }
 }
