@@ -4,7 +4,7 @@ import { authGuard } from './core/auth.guard';
 import { roleGuard } from './core/role.guard';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: '', redirectTo: 'calendario', pathMatch: 'full' },
   {
     path: 'login',
     title: 'Ingreso · FIA',
@@ -17,6 +17,12 @@ export const routes: Routes = [
     loadComponent: () => import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
   },
   {
+    path: 'perfil',
+    title: 'Mis datos · FIA',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/perfil/perfil.component').then((m) => m.PerfilComponent),
+  },
+  {
     path: 'dashboard/consolidado',
     title: 'Vista consolidada · FIA',
     canActivate: [authGuard, roleGuard('ADMIN_FIA')],
@@ -26,21 +32,31 @@ export const routes: Routes = [
   {
     path: 'calendario',
     title: 'Calendario · FIA',
-    canActivate: [authGuard],
     loadComponent: () =>
       import('./features/calendario/calendario.component').then((m) => m.CalendarioComponent),
   },
   {
+    path: 'pilotos',
+    title: 'Pilotos · FIA',
+    canActivate: [authGuard, roleGuard('ADMIN_FIA', 'ADMIN_ESCUDERIA')],
+    loadComponent: () => import('./features/pilotos/pilotos.component').then((m) => m.PilotosComponent),
+  },
+  {
+    path: 'pilotos/publico',
+    title: 'Pilotos · Publico',
+    loadComponent: () =>
+      import('./features/pilotos/pilotos-publicos.component').then((m) => m.PilotosPublicosComponent),
+  },
+  {
     path: 'sanciones',
     title: 'Sanciones · FIA',
-    canActivate: [authGuard, roleGuard('ADMIN_FIA', 'ADMIN_ESCUDERIA')],
+    canActivate: [authGuard, roleGuard('ADMIN_FIA')],
     loadComponent: () =>
       import('./features/sanciones/sanciones.component').then((m) => m.SancionesComponent),
   },
   {
     path: 'pruebas-neumaticos',
     title: 'Pruebas de neumaticos · FIA',
-    canActivate: [authGuard],
     loadComponent: () =>
       import('./features/pruebas-neumaticos/pruebas.component').then((m) => m.PruebasComponent),
   },

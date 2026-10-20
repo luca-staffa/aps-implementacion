@@ -7,13 +7,8 @@ import {
   CATEGORIAS,
   EventoCalendario,
   FiltrosCalendario,
-  coincideCategoria,
+  etiquetaCategoria,
 } from '../../core/models';
-
-interface GrupoCalendario {
-  etiqueta: string;
-  eventos: EventoCalendario[];
-}
 
 @Component({
   selector: 'app-calendario',
@@ -22,8 +17,8 @@ interface GrupoCalendario {
   template: `
     <h1>Calendario de eventos</h1>
     <p class="intro">
-      Vista agrupada por las cuatro categorias del calendario FIA, en orden cronologico ascendente.
-      Los botones de descarga respetan los filtros aplicados en pantalla.
+      Vista cronologica de las carreras de las cuatro categorias FIA. Los filtros se aplican de
+      inmediato y las descargas respetan lo seleccionado en pantalla.
     </p>
 
     <section class="tarjeta filtros">
@@ -34,6 +29,16 @@ interface GrupoCalendario {
             <option value="">Todas</option>
             @for (categoria of categorias; track categoria.valor) {
               <option [value]="categoria.valor">{{ categoria.etiqueta }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label for="f-anio">Año</label>
+          <select id="f-anio" [(ngModel)]="filtros.anio" (ngModelChange)="cargar()">
+            <option [ngValue]="null">Todos</option>
+            @for (anio of anios; track anio) {
+              <option [ngValue]="anio">{{ anio }}</option>
             }
           </select>
         </div>
@@ -80,40 +85,35 @@ interface GrupoCalendario {
 
     @if (cargando()) {
       <p class="cargando">Cargando eventos...</p>
-    } @else if (!hayEventos()) {
-      <p class="vacio">No hay eventos para los filtros seleccionados.</p>
+    } @else if (eventosOrdenados().length === 0) {
+      <p class="vacio">No hay carreras definidas para los filtros seleccionados.</p>
     } @else {
-      @for (grupo of grupos(); track grupo.etiqueta) {
-        <section class="grupo">
-          <h2>{{ grupo.etiqueta }}</h2>
-          @if (grupo.eventos.length === 0) {
-            <p class="vacio">Sin eventos en esta categoria para los filtros seleccionados.</p>
-          } @else {
-            <table>
-              <thead>
-                <tr>
-                  <th>Fechas</th>
-                  <th>Evento</th>
-                  <th>Tipo</th>
-                  <th>Circuito</th>
-                  <th>Pais</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (evento of grupo.eventos; track evento.id) {
-                  <tr>
-                    <td>{{ rangoFechas(evento) }}</td>
-                    <td><strong>{{ evento.nombre || 'Evento' }}</strong></td>
-                    <td>{{ evento.tipo || '-' }}</td>
-                    <td>{{ evento.circuito }}</td>
-                    <td>{{ evento.pais || '-' }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          }
-        </section>
-      }
+      <section class="grupo">
+        <table>
+          <thead>
+            <tr>
+              <th>Fechas</th>
+              <th>Categoria</th>
+              <th>Evento</th>
+              <th>Tipo</th>
+              <th>Circuito</th>
+              <th>Pais</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (evento of eventosOrdenados(); track evento.id) {
+              <tr>
+                <td>{{ rangoFechas(evento) }}</td>
+                <td><strong>{{ etiqueta(evento) }}</strong></td>
+                <td>{{ evento.nombre || 'Evento' }}</td>
+                <td>{{ evento.tipo || '-' }}</td>
+                <td>{{ evento.circuito }}</td>
+                <td>{{ evento.pais || '-' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
     }
   `,
   styles: [
@@ -141,17 +141,6 @@ interface GrupoCalendario {
         margin-bottom: 1.5rem;
       }
 
-      .grupo h2 {
-        font-size: 1.05rem;
-        border-left: 4px solid #6d4bc9;
-        padding-left: 0.6rem;
-      }
-
-      .detalle {
-        font-size: 0.8rem;
-        color: #5b5470;
-      }
-
       table {
         box-shadow: 0 2px 10px rgba(43, 16, 85, 0.08);
         border-radius: 8px;
@@ -164,35 +153,23 @@ export class CalendarioComponent implements OnInit {
   private readonly calendario = inject(CalendarioService);
 
   readonly categorias = CATEGORIAS;
+  readonly anios = [2026, 2025, 2024];
   readonly eventos = signal<EventoCalendario[]>([]);
   readonly cargando = signal(false);
   readonly error = signal('');
   readonly descargando = signal<'pdf' | 'ics' | null>(null);
 
-  filtros: Required<FiltrosCalendario> = { categoria: '', desde: '', hasta: '', circuito: '' };
+  filtros: Required<FiltrosCalendario> = {
+    categoria: '',
+    anio: null,
+    desde: '',
+    hasta: '',
+    circuito: '',
+  };
 
-  readonly hayEventos = computed(() => this.eventos().length > 0);
-
-  readonly grupos = computed<GrupoCalendario[]>(() => {
-    const eventos = this.eventos();
-    const ordenar = (a: EventoCalendario, b: EventoCalendario) =>
-      a.fechaInicio.localeCompare(b.fechaInicio);
-
-    const grupos: GrupoCalendario[] = CATEGORIAS.map((categoria) => ({
-      etiqueta: categoria.etiqueta,
-      eventos: eventos.filter((evento) => coincideCategoria(categoria.valor, evento.categoria)).sort(ordenar),
-    }));
-
-    const otras = eventos
-      .filter((evento) => !CATEGORIAS.some((categoria) => coincideCategoria(categoria.valor, evento.categoria)))
-      .sort(ordenar);
-
-    if (otras.length > 0) {
-      grupos.push({ etiqueta: 'Otras categorias', eventos: otras });
-    }
-
-    return grupos;
-  });
+  readonly eventosOrdenados = computed(() =>
+    [...this.eventos()].sort((a, b) => a.fechaInicio.localeCompare(b.fechaInicio)),
+  );
 
   ngOnInit(): void {
     this.cargar();
@@ -214,7 +191,7 @@ export class CalendarioComponent implements OnInit {
   }
 
   limpiarFiltros(): void {
-    this.filtros = { categoria: '', desde: '', hasta: '', circuito: '' };
+    this.filtros = { categoria: '', anio: null, desde: '', hasta: '', circuito: '' };
     this.cargar();
   }
 
@@ -227,6 +204,10 @@ export class CalendarioComponent implements OnInit {
       return '-';
     }
     return fin && fin !== inicio ? `${inicio} - ${fin}` : inicio;
+  }
+
+  etiqueta(evento: EventoCalendario): string {
+    return etiquetaCategoria(evento.categoria);
   }
 
   descargar(formato: 'pdf' | 'ics'): void {
@@ -248,6 +229,7 @@ export class CalendarioComponent implements OnInit {
   private filtrosActuales(): FiltrosCalendario {
     return {
       categoria: this.filtros.categoria || undefined,
+      anio: this.filtros.anio ?? undefined,
       desde: this.filtros.desde || undefined,
       hasta: this.filtros.hasta || undefined,
       circuito: this.filtros.circuito.trim() || undefined,

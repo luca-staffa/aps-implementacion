@@ -11,16 +11,24 @@ import java.util.List;
 
 public interface SancionRepository extends JpaRepository<Sancion, Long> {
 
-    @Query("select s from Sancion s where "
-            + "(:categoria is null or s.categoria = :categoria) and "
-            + "(:desde is null or s.fecha >= :desde) and "
-            + "(:hasta is null or s.fecha <= :hasta) "
+    @Query("select s from Sancion s where s.activo = true and "
+            + "s.categoria = coalesce(:categoria, s.categoria) and "
+            + "s.fecha >= coalesce(:desde, s.fecha) and "
+            + "s.fecha <= coalesce(:hasta, s.fecha) and "
+            + "coalesce(s.piloto.id, -1) = coalesce(:pilotoId, coalesce(s.piloto.id, -1)) and "
+            + "coalesce(s.escuderia.id, -1) = coalesce(:escuderiaId, coalesce(s.escuderia.id, -1)) and "
+            + "coalesce(s.evento.id, -1) = coalesce(:eventoId, coalesce(s.evento.id, -1)) "
             + "order by s.fecha desc")
     List<Sancion> buscarConFiltros(@Param("categoria") Categoria categoria,
                                    @Param("desde") LocalDate desde,
-                                   @Param("hasta") LocalDate hasta);
+                                   @Param("hasta") LocalDate hasta,
+                                   @Param("pilotoId") Long pilotoId,
+                                   @Param("escuderiaId") Long escuderiaId,
+                                   @Param("eventoId") Long eventoId);
 
-    List<Sancion> findByPilotoId(Long pilotoId);
+    List<Sancion> findByPilotoIdAndActivoTrue(Long pilotoId);
 
-    List<Sancion> findByEscuderiaId(Long escuderiaId);
+    List<Sancion> findByEscuderiaIdAndActivoTrue(Long escuderiaId);
+
+    List<Sancion> findByEventoIdAndActivoTrue(Long eventoId);
 }

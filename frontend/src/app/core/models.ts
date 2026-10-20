@@ -4,6 +4,7 @@ export interface Usuario {
   id?: number;
   username: string;
   email?: string;
+  telefono?: string | null;
   nombre: string;
   apellido?: string;
   rol: Rol;
@@ -48,6 +49,9 @@ export interface Sancion {
   escuderiaId?: number | null;
   escuderiaNombre?: string | null;
   categoria: string;
+  eventoId?: number | null;
+  eventoNombre?: string | null;
+  eventoCircuito?: string | null;
   motivo: string;
   fecha: string;
   tipo: string;
@@ -58,6 +62,7 @@ export interface Sancion {
 
 export interface SancionPayload {
   categoria: string;
+  eventoId: number | null;
   pilotoId: number | null;
   escuderiaId: number | null;
   motivo: string;
@@ -102,6 +107,7 @@ export interface PruebaNeumatico {
 
 export interface FiltrosCalendario {
   categoria?: string;
+  anio?: number | null;
   desde?: string;
   hasta?: string;
   circuito?: string;
@@ -109,8 +115,18 @@ export interface FiltrosCalendario {
 
 export interface FiltrosSanciones {
   categoria?: string;
+  pilotoId?: number | null;
+  escuderiaId?: number | null;
+  eventoId?: number | null;
   desde?: string;
   hasta?: string;
+}
+
+export interface Escuderia {
+  id: number;
+  nombre: string;
+  pais?: string | null;
+  activa?: boolean;
 }
 
 export interface Categoria {

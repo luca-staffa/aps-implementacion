@@ -1,12 +1,18 @@
 package com.violeta.fia.service;
 
 import com.violeta.fia.domain.Categoria;
+import com.violeta.fia.domain.Escuderia;
+import com.violeta.fia.domain.EventoCalendario;
+import com.violeta.fia.domain.Piloto;
 import com.violeta.fia.domain.Sancion;
 import com.violeta.fia.domain.SancionVisto;
 import com.violeta.fia.domain.Usuario;
 import com.violeta.fia.dto.SancionRequest;
 import com.violeta.fia.dto.SancionResponse;
 import com.violeta.fia.dto.VistoResponse;
+import com.violeta.fia.repository.EscuderiaRepository;
+import com.violeta.fia.repository.EventoCalendarioRepository;
+import com.violeta.fia.repository.PilotoRepository;
 import com.violeta.fia.repository.SancionRepository;
 import com.violeta.fia.repository.SancionVistoRepository;
 import com.violeta.fia.repository.UsuarioRepository;
@@ -24,18 +30,28 @@ public class SancionService {
     private final SancionRepository sancionRepository;
     private final SancionVistoRepository sancionVistoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final EventoCalendarioRepository eventoRepository;
+    private final PilotoRepository pilotoRepository;
+    private final EscuderiaRepository escuderiaRepository;
 
     public SancionService(SancionRepository sancionRepository,
                           SancionVistoRepository sancionVistoRepository,
-                          UsuarioRepository usuarioRepository) {
+                          UsuarioRepository usuarioRepository,
+                          EventoCalendarioRepository eventoRepository,
+                          PilotoRepository pilotoRepository,
+                          EscuderiaRepository escuderiaRepository) {
         this.sancionRepository = sancionRepository;
         this.sancionVistoRepository = sancionVistoRepository;
         this.usuarioRepository = usuarioRepository;
+        this.eventoRepository = eventoRepository;
+        this.pilotoRepository = pilotoRepository;
+        this.escuderiaRepository = escuderiaRepository;
     }
 
     @Transactional(readOnly = true)
-    public List<SancionResponse> listar(Categoria categoria, LocalDate desde, LocalDate hasta) {
-        return sancionRepository.buscarConFiltros(categoria, desde, hasta)
+    public List<SancionResponse> listar(Categoria categoria, LocalDate desde, LocalDate hasta,
+                                        Long pilotoId, Long escuderiaId, Long eventoId) {
+        return sancionRepository.buscarConFiltros(categoria, desde, hasta, pilotoId, escuderiaId, eventoId)
                 .stream().map(this::aResponse).toList();
     }
 
@@ -63,7 +79,8 @@ public class SancionService {
     @Transactional
     public void eliminar(Long id) {
         Sancion sancion = buscarEntidad(id);
-        sancionRepository.delete(sancion);
+        sancion.setActivo(false);
+        sancionRepository.save(sancion);
     }
 
     @Transactional
@@ -89,26 +106,44 @@ public class SancionService {
     }
 
     private void aplicar(Sancion sancion, SancionRequest request) {
-        sancion.setPiloto(resolverUsuario(request.pilotoId(), "piloto"));
-        sancion.setEscuderia(resolverUsuario(request.escuderiaId(), "escuderia"));
+        sancion.setPiloto(resolverPiloto(request.pilotoId()));
+        sancion.setEscuderia(resolverEscuderia(request.escuderiaId()));
         sancion.setCategoria(request.categoria());
+        sancion.setEvento(resolverEvento(request.eventoId()));
         sancion.setMotivo(request.motivo());
         sancion.setFecha(request.fecha());
         sancion.setTipo(request.tipo());
         sancion.setDescripcion(request.descripcion());
     }
 
-    private Usuario resolverUsuario(Long id, String campo) {
+    private EventoCalendario resolverEvento(Long eventoId) {
+        return eventoRepository.findById(eventoId)
+                .orElseThrow(() -> new NoSuchElementException("No existe la carrera con id: " + eventoId));
+    }
+
+    private Piloto resolverPiloto(Long id) {
         if (id == null) {
             return null;
         }
-        return usuarioRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("No existe el " + campo + " con id: " + id));
+        return pilotoRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("No existe el piloto con id: " + id));
+    }
+
+    private Escuderia resolverEscuderia(Long id) {
+        if (id == null) {
+            return null;
+        }
+        return escuderiaRepository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("No existe la escuderia con id: " + id));
     }
 
     private Sancion buscarEntidad(Long id) {
-        return sancionRepository.findById(id)
+        Sancion sancion = sancionRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Sancion no encontrada con id: " + id));
+        if (!sancion.isActivo()) {
+            throw new NoSuchElementException("Sancion no encontrada con id: " + id);
+        }
+        return sancion;
     }
 
     private SancionResponse aResponse(Sancion sancion) {
@@ -124,10 +159,13 @@ public class SancionService {
         return new SancionResponse(
                 sancion.getId(),
                 sancion.getPiloto() != null ? sancion.getPiloto().getId() : null,
-                nombreCompleto(sancion.getPiloto()),
+                nombrePiloto(sancion.getPiloto()),
                 sancion.getEscuderia() != null ? sancion.getEscuderia().getId() : null,
-                nombreCompleto(sancion.getEscuderia()),
+                nombreEscuderia(sancion.getEscuderia()),
                 sancion.getCategoria(),
+                sancion.getEvento() != null ? sancion.getEvento().getId() : null,
+                sancion.getEvento() != null ? sancion.getEvento().getNombre() : null,
+                sancion.getEvento() != null ? sancion.getEvento().getCircuito() : null,
                 sancion.getMotivo(),
                 sancion.getFecha(),
                 sancion.getTipo(),
@@ -136,10 +174,17 @@ public class SancionService {
                 vistas);
     }
 
-    private String nombreCompleto(Usuario usuario) {
-        if (usuario == null) {
+    private String nombrePiloto(Piloto piloto) {
+        if (piloto == null) {
             return null;
         }
-        return usuario.getNombre() + " " + usuario.getApellido();
+        return piloto.getNombre() + " " + piloto.getApellido();
+    }
+
+    private String nombreEscuderia(Escuderia escuderia) {
+        if (escuderia == null) {
+            return null;
+        }
+        return escuderia.getNombre();
     }
 }

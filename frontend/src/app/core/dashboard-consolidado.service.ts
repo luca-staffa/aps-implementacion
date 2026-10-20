@@ -16,6 +16,7 @@ export interface DashboardCategoria {
   eventosCalendario: number;
   sanciones: number;
   pruebasNeumaticos: number;
+  pilotos: number;
   atributos: DashboardAtributo[];
 }
 

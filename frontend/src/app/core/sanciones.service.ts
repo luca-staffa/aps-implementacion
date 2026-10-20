@@ -38,6 +38,15 @@ export class SancionesService {
     if (filtros.categoria) {
       params = params.set('categoria', filtros.categoria);
     }
+    if (filtros.eventoId) {
+      params = params.set('eventoId', String(filtros.eventoId));
+    }
+    if (filtros.pilotoId) {
+      params = params.set('pilotoId', String(filtros.pilotoId));
+    }
+    if (filtros.escuderiaId) {
+      params = params.set('escuderiaId', String(filtros.escuderiaId));
+    }
     if (filtros.desde) {
       params = params.set('desde', filtros.desde);
     }

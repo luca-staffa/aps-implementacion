@@ -33,6 +33,9 @@ public class Usuario {
     @Column(name = "email", nullable = false, unique = true, length = 150)
     private String email;
 
+    @Column(name = "telefono", length = 30)
+    private String telefono;
+
     @Column(name = "username", nullable = false, unique = true, length = 80)
     private String username;
 
@@ -42,6 +45,10 @@ public class Usuario {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "rol_id")
     private Rol rol;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "escuderia_id")
+    private Escuderia escuderia;
 
     @Column(name = "activo", nullable = false)
     private boolean activo = true;
@@ -87,6 +94,14 @@ public class Usuario {
         this.email = email;
     }
 
+    public String getTelefono() {
+        return telefono;
+    }
+
+    public void setTelefono(String telefono) {
+        this.telefono = telefono;
+    }
+
     public String getUsername() {
         return username;
     }
@@ -109,6 +124,14 @@ public class Usuario {
 
     public void setRol(Rol rol) {
         this.rol = rol;
+    }
+
+    public Escuderia getEscuderia() {
+        return escuderia;
+    }
+
+    public void setEscuderia(Escuderia escuderia) {
+        this.escuderia = escuderia;
     }
 
     public boolean isActivo() {

@@ -42,6 +42,10 @@ export class AuthService {
     return this.http.get<Usuario>(`${this.base}/me`);
   }
 
+  actualizarDatos(datos: { email: string; telefono: string }): Observable<Usuario> {
+    return this.http.put<Usuario>(`${this.base}/me`, datos);
+  }
+
   logout(): void {
     this.http
       .post<void>(`${this.base}/logout`, {})

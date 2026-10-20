@@ -12,15 +12,17 @@ import java.util.List;
 public interface EventoCalendarioRepository extends JpaRepository<EventoCalendario, Long> {
 
     @Query("select e from EventoCalendario e where "
-            + "(:categoria is null or e.categoria = :categoria) and "
-            + "(:desde is null or e.fechaInicio >= :desde) and "
-            + "(:hasta is null or e.fechaFin <= :hasta) and "
-            + "(:circuito is null or lower(e.circuito) like lower(concat('%', :circuito, '%'))) "
+            + "e.categoria = coalesce(:categoria, e.categoria) and "
+            + "(:anio is null or year(coalesce(e.fechaInicio, e.fechaFin)) = :anio) and "
+            + "coalesce(e.fechaInicio, e.fechaFin) >= coalesce(:desde, coalesce(e.fechaInicio, e.fechaFin)) and "
+            + "coalesce(e.fechaFin, e.fechaInicio) <= coalesce(:hasta, coalesce(e.fechaFin, e.fechaInicio)) and "
+            + "coalesce(lower(e.circuito), '') like coalesce(:circuitoLike, coalesce(lower(e.circuito), '')) "
             + "order by e.fechaInicio asc")
     List<EventoCalendario> buscarConFiltros(@Param("categoria") Categoria categoria,
+                                            @Param("anio") Integer anio,
                                             @Param("desde") LocalDate desde,
                                             @Param("hasta") LocalDate hasta,
-                                            @Param("circuito") String circuito);
+                                            @Param("circuitoLike") String circuitoLike);
 
     List<EventoCalendario> findByCategoriaOrderByFechaInicioAsc(Categoria categoria);
 

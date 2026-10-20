@@ -74,20 +74,26 @@ npm start             # http://localhost:4200
 
 - **US4 - Seguridad y RBAC:** Spring Security + JWT con expiracion absoluta y por inactividad,
   BCrypt, 3 perfiles, 401/403, guards e interceptor Angular.
-- **US3 - Sanciones:** ABM + consulta, validacion piloto-o-escuderia (selectores poblados desde
-  `GET /api/usuarios`), registro de "Visto" (fecha + usuario).
-- **US2 - Calendario:** 4 categorias agrupadas y orden cronologico, filtros, exportacion
-  PDF/ICS identica a la pantalla y estado vacio.
+- **Datos personales:** actualizacion autenticada de email y telefono propios con validacion de
+  formato y control de email unico.
+- **US3 - Sanciones:** ABM + consulta restringida al Administrador del sistema (`ADMIN_FIA`),
+  validacion de motivo, penalidad, categoria y carrera, baja logica, asociacion a pilotos y
+  escuderias reales e historial filtrable por piloto/escuderia/carrera.
+- **US2 - Calendario:** 4 categorias en una vista cronologica, filtros por categoria y año,
+  exportacion PDF/ICS identica a la pantalla y estado vacio.
 - **US7 - Pruebas de neumaticos:** dos fechas anuales, resultados por escuderia, solo lectura.
+- **Acceso publico:** el calendario, los pilotos publicos y las pruebas de neumaticos se consultan
+  sin iniciar sesion.
 
 El detalle de sprint, retrospectiva y planificacion del Sprint 2 esta en `ENTREGA Sprint 1 FIA - Violeta.md`.
 
 ## Tests
 
 ```bash
-cd backend && mvn test    # o ./mvnw test -> 31 tests
+cd backend && mvn test    # o ./mvnw test -> 64 tests
 ```
 
 Cubren autenticacion (login, registro, 401/403), sanciones (ABM, validacion, permisos y "Visto"),
-pruebas de neumaticos, filtros de calendario y expiracion por inactividad. Usan H2 en memoria
-(perfil `test`), Flyway deshabilitado y `ddl-auto=create-drop`.
+pilotos (ABM, limites y permisos), pruebas de neumaticos, filtros de calendario (categoria y año) y
+expiracion por inactividad. Usan H2 en memoria (perfil `test`) con Flyway habilitado y
+`ddl-auto=validate`.

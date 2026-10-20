@@ -9,33 +9,46 @@ import { AuthService } from './core/auth.service';
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   template: `
-    @if (auth.autenticado()) {
-      <header class="barra">
-        <div class="marca">FIA <span>Comision Violeta</span></div>
+    <header class="barra">
+      <div class="marca">FIA <span>Comision Violeta</span></div>
 
-        <nav class="menu">
+      <nav class="menu">
+        @if (auth.autenticado()) {
           <a routerLink="/dashboard" routerLinkActive="activo">Panel</a>
           @if (auth.esAdminFia()) {
             <a routerLink="/dashboard/consolidado" routerLinkActive="activo">Vista consolidada</a>
           }
           <a routerLink="/calendario" routerLinkActive="activo">Calendario</a>
-          @if (auth.puedeGestionarSanciones()) {
+          @if (auth.esAdminFia() || auth.esAdminEscuderia()) {
+            <a routerLink="/pilotos" routerLinkActive="activo">Pilotos</a>
+          }
+          @if (auth.esAdminFia()) {
             <a routerLink="/sanciones" routerLinkActive="activo">Sanciones</a>
           }
+          <a routerLink="/pilotos/publico" routerLinkActive="activo">Pilotos publicos</a>
           <a routerLink="/pruebas-neumaticos" routerLinkActive="activo">Pruebas de neumaticos</a>
-        </nav>
+          <a routerLink="/perfil" routerLinkActive="activo">Mi perfil</a>
+        } @else {
+          <a routerLink="/calendario" routerLinkActive="activo">Calendario</a>
+          <a routerLink="/pilotos/publico" routerLinkActive="activo">Pilotos publicos</a>
+          <a routerLink="/pruebas-neumaticos" routerLinkActive="activo">Pruebas de neumaticos</a>
+        }
+      </nav>
 
-        <div class="sesion">
+      <div class="sesion">
+        @if (auth.autenticado()) {
           <div class="datos">
             <span class="nombre">{{ auth.nombre() }}</span>
             <span class="rol">{{ etiquetaRol(auth.rol()) }}</span>
           </div>
           <button type="button" class="secundario" (click)="cerrarSesion()">Cerrar sesion</button>
-        </div>
-      </header>
-    }
+        } @else {
+          <a class="ingresar" routerLink="/login">Ingresar</a>
+        }
+      </div>
+    </header>
 
-    <main [class.con-barra]="auth.autenticado()">
+    <main class="con-barra">
       <router-outlet></router-outlet>
     </main>
   `,
@@ -110,6 +123,19 @@ import { AuthService } from './core/auth.service';
       .rol {
         font-size: 0.72rem;
         color: #b9a6ec;
+      }
+
+      .ingresar {
+        color: #ffffff;
+        background: #6d4bc9;
+        padding: 0.45rem 0.9rem;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+
+      .ingresar:hover {
+        background: #7d5bd9;
+        text-decoration: none;
       }
 
       main {

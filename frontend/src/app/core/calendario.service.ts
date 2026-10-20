@@ -30,6 +30,9 @@ export class CalendarioService {
     if (filtros.categoria) {
       params = params.set('categoria', filtros.categoria);
     }
+    if (filtros.anio) {
+      params = params.set('anio', String(filtros.anio));
+    }
     if (filtros.desde) {
       params = params.set('desde', filtros.desde);
     }
