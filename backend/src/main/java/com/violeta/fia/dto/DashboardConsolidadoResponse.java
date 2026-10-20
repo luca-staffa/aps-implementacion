@@ -9,7 +9,8 @@ public record DashboardConsolidadoResponse(
             Long categoriaId,
             String codigo,
             String nombre,
-            Integer temporadaActual,
+            /** Temporada consultada; {@code null} cuando se agregaron todas las temporadas. */
+            Integer temporada,
             Long eventosCalendario,
             Long sanciones,
             Long pruebasNeumaticos,

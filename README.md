@@ -1,6 +1,6 @@
-# FIA - Codigo Sprint 1 (Comision Violeta - implementadora)
+# FIA - Codigo Sprint 2 (Comision Violeta - implementadora)
 
-Repositorio del Sprint 1 del proyecto **FIA** (Enunciado 1, APS 2026). Incluye el backend
+Repositorio del Sprint 2 del proyecto **FIA** (Enunciado 1, APS 2026). Incluye el backend
 REST, el frontend web, la base PostgreSQL y los datos semilla.
 
 ## Estructura
@@ -70,30 +70,14 @@ npm start             # http://localhost:4200
 | `admin.escuderia` | `Password123!` | `ADMIN_ESCUDERIA` |
 | `publico`         | `Password123!` | `PUBLICO`         |
 
-## Alcance funcional del Sprint 1
-
-- **US4 - Seguridad y RBAC:** Spring Security + JWT con expiracion absoluta y por inactividad,
-  BCrypt, 3 perfiles, 401/403, guards e interceptor Angular.
-- **Datos personales:** actualizacion autenticada de email y telefono propios con validacion de
-  formato y control de email unico.
-- **US3 - Sanciones:** ABM + consulta restringida al Administrador del sistema (`ADMIN_FIA`),
-  validacion de motivo, penalidad, categoria y carrera, baja logica, asociacion a pilotos y
-  escuderias reales e historial filtrable por piloto/escuderia/carrera.
-- **US2 - Calendario:** 4 categorias en una vista cronologica, filtros por categoria y año,
-  exportacion PDF/ICS identica a la pantalla y estado vacio.
-- **US7 - Pruebas de neumaticos:** dos fechas anuales, resultados por escuderia, solo lectura.
-- **Acceso publico:** el calendario, los pilotos publicos y las pruebas de neumaticos se consultan
-  sin iniciar sesion.
-
-El detalle de sprint, retrospectiva y planificacion del Sprint 2 esta en `ENTREGA Sprint 1 FIA - Violeta.md`.
 
 ## Tests
 
 ```bash
-cd backend && mvn test    # o ./mvnw test -> 64 tests
+cd backend && mvn test    # o ./mvnw test -> 70 tests
 ```
 
 Cubren autenticacion (login, registro, 401/403), sanciones (ABM, validacion, permisos y "Visto"),
-pilotos (ABM, limites y permisos), pruebas de neumaticos, filtros de calendario (categoria y año) y
-expiracion por inactividad. Usan H2 en memoria (perfil `test`) con Flyway habilitado y
-`ddl-auto=validate`.
+pilotos (ABM, limites y permisos), pruebas de neumaticos, filtros de calendario (categoria y año),
+paridad entre la vista consolidada y el calendario y expiracion por inactividad. Usan H2 en memoria
+(perfil `test`) con Flyway habilitado y `ddl-auto=validate`.

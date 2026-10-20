@@ -155,6 +155,37 @@ class PilotoControllerTest extends BaseIntegrationTest {
     }
 
     @Test
+    void publicoFiltraPorNombreDeEscuderiaIgnorandoMayusculas() throws Exception {
+        guardarPiloto("Charles", "Leclerc", 16, "LEC", "TITULAR", escuderiaPropia);
+        guardarPiloto("Carlos", "Sainz", 55, "SAI", "TITULAR", escuderiaAjena);
+
+        mockMvc.perform(get("/api/pilotos/publico")
+                        .param("escuderia", "alpin"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].apellido").value("Leclerc"))
+                .andExpect(jsonPath("$[0].escuderiaNombre").value("Alpine"));
+
+        mockMvc.perform(get("/api/pilotos/publico")
+                        .param("escuderia", "ferrari"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].apellido").value("Sainz"));
+    }
+
+    @Test
+    void publicoFiltraPorEscuderiaId() throws Exception {
+        guardarPiloto("Charles", "Leclerc", 16, "LEC", "TITULAR", escuderiaPropia);
+        guardarPiloto("Carlos", "Sainz", 55, "SAI", "TITULAR", escuderiaAjena);
+
+        mockMvc.perform(get("/api/pilotos/publico")
+                        .param("escuderiaId", escuderiaPropia.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].apellido").value("Leclerc"));
+    }
+
+    @Test
     void adminFiaPuedeConsultarLaListaDePilotos() throws Exception {
         guardarPiloto("Charles", "Leclerc", 16, "LEC", "TITULAR", escuderiaPropia);
 
@@ -164,6 +195,55 @@ class PilotoControllerTest extends BaseIntegrationTest {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)));
+    }
+
+    @Test
+    void listadoProtegidoFiltraPorCategoriaYAnio() throws Exception {
+        guardarPiloto("Charles", "Leclerc", 16, "LEC", "TITULAR", escuderiaPropia);
+
+        String token = obtenerToken("admin.fia", "Password123!");
+
+        mockMvc.perform(get("/api/pilotos")
+                        .header("Authorization", "Bearer " + token)
+                        .param("categoria", "F1")
+                        .param("temporada", "2026"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].categoriaCodigo").value("F1"));
+
+        mockMvc.perform(get("/api/pilotos")
+                        .header("Authorization", "Bearer " + token)
+                        .param("categoria", "F2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+
+        mockMvc.perform(get("/api/pilotos")
+                        .header("Authorization", "Bearer " + token)
+                        .param("temporada", "2019"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void listadoProtegidoFiltraPorIdsYRespetaLaEscuderiaDelAdmin() throws Exception {
+        guardarPiloto("Charles", "Leclerc", 16, "LEC", "TITULAR", escuderiaPropia);
+        guardarPiloto("Carlos", "Sainz", 55, "SAI", "TITULAR", escuderiaAjena);
+
+        String token = obtenerToken("admin.escuderia", "Password123!");
+
+        mockMvc.perform(get("/api/pilotos")
+                        .header("Authorization", "Bearer " + token)
+                        .param("categoriaId", categoria.getId().toString())
+                        .param("temporadaId", temporada.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].apellido").value("Leclerc"));
+
+        mockMvc.perform(get("/api/pilotos")
+                        .header("Authorization", "Bearer " + token)
+                        .param("categoriaId", "999"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test

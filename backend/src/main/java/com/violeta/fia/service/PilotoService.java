@@ -52,7 +52,9 @@ public class PilotoService {
     }
 
     @Transactional(readOnly = true)
-    public List<PilotoResponse> listar(Authentication authentication) {
+    public List<PilotoResponse> listar(Authentication authentication,
+                                       Long categoriaId, String categoria,
+                                       Long temporadaId, Integer temporada) {
         Usuario usuario = obtenerUsuario(authentication);
         List<Piloto> pilotos;
 
@@ -65,7 +67,40 @@ public class PilotoService {
             pilotos = pilotoRepository.findAllByActivoTrueOrderByApellidoAsc();
         }
 
-        return pilotos.stream().map(this::toResponse).toList();
+        Long filtroCategoriaId = resolverCategoriaId(categoriaId, categoria);
+        Long filtroTemporadaId = resolverTemporadaId(temporadaId, temporada);
+
+        return pilotos.stream()
+                .filter(piloto -> filtroCategoriaId == null
+                        || Objects.equals(piloto.getCategoria().getId(), filtroCategoriaId))
+                .filter(piloto -> filtroTemporadaId == null
+                        || Objects.equals(piloto.getTemporada().getId(), filtroTemporadaId))
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private Long resolverCategoriaId(Long categoriaId, String categoriaCodigo) {
+        if (categoriaId != null) {
+            return categoriaId;
+        }
+        if (categoriaCodigo == null || categoriaCodigo.isBlank()) {
+            return null;
+        }
+        return categoriaCatalogoRepository.findByCodigo(categoriaCodigo.trim())
+                .map(CategoriaCatalogo::getId)
+                .orElse(-1L);
+    }
+
+    private Long resolverTemporadaId(Long temporadaId, Integer anio) {
+        if (temporadaId != null) {
+            return temporadaId;
+        }
+        if (anio == null) {
+            return null;
+        }
+        return temporadaRepository.findByAnio(anio)
+                .map(Temporada::getId)
+                .orElse(-1L);
     }
 
     @Transactional(readOnly = true)
@@ -129,11 +164,15 @@ public class PilotoService {
     }
 
     @Transactional(readOnly = true)
-    public List<PilotoPublicResponse> listarPublico(Long categoriaId, Long temporadaId, Long escuderiaId) {
+    public List<PilotoPublicResponse> listarPublico(Long categoriaId, Long temporadaId, Long escuderiaId, String escuderia) {
+        String nombreEscuderia = escuderia != null ? escuderia.trim().toLowerCase() : null;
         return pilotoRepository.findAllByActivoTrueOrderByApellidoAsc().stream()
                 .filter(piloto -> categoriaId == null || Objects.equals(piloto.getCategoria().getId(), categoriaId))
                 .filter(piloto -> temporadaId == null || Objects.equals(piloto.getTemporada().getId(), temporadaId))
                 .filter(piloto -> escuderiaId == null || Objects.equals(piloto.getEscuderia().getId(), escuderiaId))
+                .filter(piloto -> nombreEscuderia == null || nombreEscuderia.isEmpty()
+                        || (piloto.getEscuderia() != null && piloto.getEscuderia().getNombre() != null
+                        && piloto.getEscuderia().getNombre().toLowerCase().contains(nombreEscuderia)))
                 .map(this::toPublicResponse)
                 .toList();
     }

@@ -26,6 +26,18 @@ public interface SancionRepository extends JpaRepository<Sancion, Long> {
                                    @Param("escuderiaId") Long escuderiaId,
                                    @Param("eventoId") Long eventoId);
 
+    /**
+     * Cuenta las sanciones vigentes de una categoria y anio. Se alinea con
+     * {@link #buscarConFiltros}: ignora la baja logica ({@code activo = true}) y usa el anio de la
+     * fecha de la sancion. Si {@code anio} es {@code null} agrega todas las temporadas.
+     */
+    @Query("select count(s) from Sancion s where "
+            + "s.activo = true and "
+            + "s.categoria = :categoria and "
+            + "(:anio is null or year(s.fecha) = :anio)")
+    long contarActivasPorCategoriaYAnio(@Param("categoria") Categoria categoria,
+                                        @Param("anio") Integer anio);
+
     List<Sancion> findByPilotoIdAndActivoTrue(Long pilotoId);
 
     List<Sancion> findByEscuderiaIdAndActivoTrue(Long escuderiaId);

@@ -12,7 +12,8 @@ export interface DashboardCategoria {
   categoriaId: number;
   codigo: string;
   nombre: string;
-  temporadaActual: number;
+  /** Temporada consultada; `null` cuando se agregan todas las temporadas. */
+  temporada: number | null;
   eventosCalendario: number;
   sanciones: number;
   pruebasNeumaticos: number;
@@ -30,16 +31,16 @@ export interface DashboardAtributo {
 export class DashboardConsolidadoService {
   private readonly api = inject(ApiService);
 
-  listar(filtros: { categoria?: string; temporada?: number | string } = {}): Observable<DashboardConsolidadoResponse> {
+  listar(filtros: { categoria?: string; temporada?: number | string | null } = {}): Observable<DashboardConsolidadoResponse> {
     return this.api.get<DashboardConsolidadoResponse>('/dashboard/consolidado', this.aParametros(filtros));
   }
 
-  private aParametros(filtros: { categoria?: string; temporada?: number | string }): HttpParams {
+  private aParametros(filtros: { categoria?: string; temporada?: number | string | null }): HttpParams {
     let params = new HttpParams();
     if (filtros.categoria) {
       params = params.set('categoria', filtros.categoria);
     }
-    if (filtros.temporada) {
+    if (filtros.temporada !== undefined && filtros.temporada !== null && filtros.temporada !== '') {
       params = params.set('temporada', String(filtros.temporada));
     }
     return params;

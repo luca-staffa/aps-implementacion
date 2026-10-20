@@ -7,6 +7,7 @@ import {
   CATEGORIAS,
   EventoCalendario,
   FiltrosCalendario,
+  TEMPORADAS,
   etiquetaCategoria,
 } from '../../core/models';
 
@@ -36,7 +37,7 @@ import {
         <div>
           <label for="f-anio">Año</label>
           <select id="f-anio" [(ngModel)]="filtros.anio" (ngModelChange)="cargar()">
-            <option [ngValue]="null">Todos</option>
+            <option [ngValue]="null">Todas las temporadas</option>
             @for (anio of anios; track anio) {
               <option [ngValue]="anio">{{ anio }}</option>
             }
@@ -153,7 +154,7 @@ export class CalendarioComponent implements OnInit {
   private readonly calendario = inject(CalendarioService);
 
   readonly categorias = CATEGORIAS;
-  readonly anios = [2026, 2025, 2024];
+  readonly anios = TEMPORADAS;
   readonly eventos = signal<EventoCalendario[]>([]);
   readonly cargando = signal(false);
   readonly error = signal('');

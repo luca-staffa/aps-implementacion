@@ -24,5 +24,7 @@ public interface PilotoRepository extends JpaRepository<Piloto, Long> {
 
     long countByActivoTrueAndCategoriaIdAndTemporadaId(Long categoriaId, Long temporadaId);
 
+    long countByActivoTrueAndCategoriaId(Long categoriaId);
+
     long countByEscuderiaIdAndActivoTrueAndCategoriaIdAndTemporadaIdAndRol(Long escuderiaId, Long categoriaId, Long temporadaId, Piloto.RolPiloto rol);
 }

@@ -38,7 +38,7 @@ interface FormularioPiloto {
           <select id="f-categoria" [(ngModel)]="filtroCategoria" (ngModelChange)="cargar()">
             <option value="">Todas</option>
             @for (categoria of categorias; track categoria.valor) {
-              <option [value]="categoriaIds[categoria.valor]">{{ categoria.etiqueta }}</option>
+              <option [value]="categoria.valor">{{ categoria.etiqueta }}</option>
             }
           </select>
         </div>
@@ -48,17 +48,17 @@ interface FormularioPiloto {
           <select id="f-temporada" [(ngModel)]="filtroTemporada" (ngModelChange)="cargar()">
             <option value="">Todas</option>
             @for (temporada of temporadas; track temporada.id) {
-              <option [value]="temporada.id">{{ temporada.anio }}</option>
+              <option [value]="temporada.anio">{{ temporada.anio }}</option>
             }
           </select>
         </div>
 
-        @if (!auth.esAdminFia()) {
-          <div class="acciones">
+        <div class="acciones">
+          @if (puedeGestionar()) {
             <button type="button" (click)="abrirFormulario()">Nuevo piloto</button>
-            <button type="button" class="secundario" (click)="limpiarFiltros()">Limpiar</button>
-          </div>
-        }
+          }
+          <button type="button" class="secundario" (click)="limpiarFiltros()">Limpiar</button>
+        </div>
       </div>
     </section>
 
@@ -169,6 +169,13 @@ interface FormularioPiloto {
       <div class="aviso error">{{ error() }}</div>
     }
 
+    @if (!puedeGestionar()) {
+      <div class="aviso info">
+        Tu perfil tiene acceso de solo lectura: podes consultar la plantilla, pero no crear, editar
+        ni eliminar pilotos.
+      </div>
+    }
+
     @if (cargando()) {
       <p class="cargando">Cargando pilotos...</p>
     } @else if (pilotos().length === 0) {
@@ -183,7 +190,9 @@ interface FormularioPiloto {
             <th>Escuderia</th>
             <th>Rol</th>
             <th>Numero</th>
-            <th>Acciones</th>
+            @if (puedeGestionar()) {
+              <th>Acciones</th>
+            }
           </tr>
         </thead>
         <tbody>
@@ -195,12 +204,12 @@ interface FormularioPiloto {
               <td>{{ piloto.escuderiaNombre || '-' }}</td>
               <td>{{ piloto.rol }}</td>
               <td>{{ piloto.numero }}</td>
-              <td class="acciones-fila">
-                @if (!auth.esAdminFia()) {
+              @if (puedeGestionar()) {
+                <td class="acciones-fila">
                   <button type="button" class="secundario" (click)="editar(piloto)">Editar</button>
                   <button type="button" class="peligro" (click)="eliminar(piloto)">Eliminar</button>
-                }
-              </td>
+                </td>
+              }
             </tr>
           }
         </tbody>
@@ -224,6 +233,9 @@ interface FormularioPiloto {
 export class PilotosComponent {
   readonly auth = inject(AuthService);
   private readonly servicio = inject(PilotosService);
+
+  /** Solo el administrador de escuderia puede crear, editar o eliminar pilotos. */
+  readonly puedeGestionar = computed(() => this.auth.esAdminEscuderia());
 
   readonly categorias = CATEGORIAS;
   readonly temporadas = [
@@ -262,12 +274,12 @@ export class PilotosComponent {
   }
 
   cargar(): void {
-    const categoriaId = this.filtroCategoria ? Number(this.filtroCategoria) : undefined;
-    const temporadaId = this.filtroTemporada ? Number(this.filtroTemporada) : undefined;
+    const categoria = this.filtroCategoria || undefined;
+    const temporada = this.filtroTemporada ? Number(this.filtroTemporada) : undefined;
 
     this.cargando.set(true);
     this.error.set('');
-    this.servicio.listar({ categoriaId, temporadaId }).subscribe({
+    this.servicio.listar({ categoria, temporada }).subscribe({
       next: (respuesta) => this.pilotos.set(respuesta ?? []),
       error: () => {
         this.error.set('No se pudieron cargar los pilotos.');
@@ -278,7 +290,7 @@ export class PilotosComponent {
   }
 
   abrirFormulario(): void {
-    if (this.auth.esAdminFia()) {
+    if (!this.puedeGestionar()) {
       return;
     }
     this.resetFormulario();
@@ -287,7 +299,7 @@ export class PilotosComponent {
   }
 
   editar(piloto: Piloto): void {
-    if (this.auth.esAdminFia()) {
+    if (!this.puedeGestionar()) {
       return;
     }
     this.edicionId.set(piloto.id ?? null);
@@ -316,8 +328,8 @@ export class PilotosComponent {
 
   guardar(): void {
     this.limpiarErrores();
-    if (this.auth.esAdminFia()) {
-      this.error.set('La FIA solo puede consultar pilotos.');
+    if (!this.puedeGestionar()) {
+      this.error.set('Tu perfil solo puede consultar pilotos.');
       return;
     }
     if (!this.form.nombre || !this.form.apellido || !this.form.categoriaId || !this.form.temporadaId) {
@@ -354,7 +366,7 @@ export class PilotosComponent {
 
   eliminar(piloto: Piloto): void {
     this.limpiarErrores();
-    if (this.auth.esAdminFia()) {
+    if (!this.puedeGestionar()) {
       return;
     }
     if (!window.confirm('¿Deseas eliminar este piloto?')) {

@@ -31,8 +31,14 @@ public class PilotoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PilotoResponse>> listar(Authentication authentication) {
-        return ResponseEntity.ok(pilotoService.listar(authentication));
+    public ResponseEntity<List<PilotoResponse>> listar(
+            @RequestParam(required = false) Long categoriaId,
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) Long temporadaId,
+            @RequestParam(required = false) Integer temporada,
+            Authentication authentication) {
+        return ResponseEntity.ok(
+                pilotoService.listar(authentication, categoriaId, categoria, temporadaId, temporada));
     }
 
     @GetMapping("/{id}")
@@ -63,7 +69,8 @@ public class PilotoController {
     public ResponseEntity<List<PilotoPublicResponse>> listarPublico(
             @RequestParam(required = false) Long categoriaId,
             @RequestParam(required = false) Long temporadaId,
-            @RequestParam(required = false) Long escuderiaId) {
-        return ResponseEntity.ok(pilotoService.listarPublico(categoriaId, temporadaId, escuderiaId));
+            @RequestParam(required = false) Long escuderiaId,
+            @RequestParam(required = false) String escuderia) {
+        return ResponseEntity.ok(pilotoService.listarPublico(categoriaId, temporadaId, escuderiaId, escuderia));
     }
 }

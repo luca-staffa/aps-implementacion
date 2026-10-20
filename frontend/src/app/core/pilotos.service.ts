@@ -62,13 +62,19 @@ export interface PilotoPayload {
 export class PilotosService {
   private readonly api = inject(ApiService);
 
-  listar(filtros: { categoriaId?: number; temporadaId?: number; escuderiaId?: number } = {}): Observable<Piloto[]> {
+  listar(filtros: { categoriaId?: number; categoria?: string; temporadaId?: number; temporada?: number; escuderiaId?: number } = {}): Observable<Piloto[]> {
     let params = new HttpParams();
     if (filtros.categoriaId) {
       params = params.set('categoriaId', String(filtros.categoriaId));
     }
+    if (filtros.categoria) {
+      params = params.set('categoria', filtros.categoria);
+    }
     if (filtros.temporadaId) {
       params = params.set('temporadaId', String(filtros.temporadaId));
+    }
+    if (filtros.temporada) {
+      params = params.set('temporada', String(filtros.temporada));
     }
     if (filtros.escuderiaId) {
       params = params.set('escuderiaId', String(filtros.escuderiaId));
@@ -76,7 +82,7 @@ export class PilotosService {
     return this.api.get<Piloto[]>('/pilotos', params);
   }
 
-  listarPublico(filtros: { categoriaId?: number; temporadaId?: number; escuderiaId?: number } = {}): Observable<PilotoPublico[]> {
+  listarPublico(filtros: { categoriaId?: number; temporadaId?: number; escuderiaId?: number; escuderia?: string } = {}): Observable<PilotoPublico[]> {
     let params = new HttpParams();
     if (filtros.categoriaId) {
       params = params.set('categoriaId', String(filtros.categoriaId));
@@ -86,6 +92,9 @@ export class PilotosService {
     }
     if (filtros.escuderiaId) {
       params = params.set('escuderiaId', String(filtros.escuderiaId));
+    }
+    if (filtros.escuderia && filtros.escuderia.trim()) {
+      params = params.set('escuderia', filtros.escuderia.trim());
     }
     return this.api.get<PilotoPublico[]>('/pilotos/publico', params);
   }

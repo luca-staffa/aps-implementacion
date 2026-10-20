@@ -105,7 +105,7 @@ class DashboardConsolidadoTest extends BaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.categorias", hasSize(1)))
                 .andExpect(jsonPath("$.categorias[0].codigo").value("F1"))
-                .andExpect(jsonPath("$.categorias[0].temporadaActual").value(2026))
+                .andExpect(jsonPath("$.categorias[0].temporada").value(2026))
                 .andExpect(jsonPath("$.categorias[0].pilotos").value(2));
     }
 

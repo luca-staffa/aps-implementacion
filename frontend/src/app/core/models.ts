@@ -150,6 +150,9 @@ export const TIPOS_SANCION: string[] = [
   'Descalificacion',
 ];
 
+/** Temporadas ofrecidas por las vistas de consulta; `null` representa "Todas las temporadas". */
+export const TEMPORADAS: number[] = [2026, 2025, 2024];
+
 function normalizar(valor: string): string {
   return (valor ?? '').toString().toUpperCase().replace(/[^A-Z0-9]/g, '');
 }

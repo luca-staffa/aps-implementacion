@@ -24,6 +24,17 @@ public interface EventoCalendarioRepository extends JpaRepository<EventoCalendar
                                             @Param("hasta") LocalDate hasta,
                                             @Param("circuitoLike") String circuitoLike);
 
+    /**
+     * Cuenta los eventos de una categoria usando exactamente el mismo criterio de anio que
+     * {@link #buscarConFiltros} (el anio de la fecha de inicio, o de la de fin si no hay inicio)
+     * para que la vista consolidada nunca diverja del calendario.
+     */
+    @Query("select count(e) from EventoCalendario e where "
+            + "e.categoria = :categoria and "
+            + "(:anio is null or year(coalesce(e.fechaInicio, e.fechaFin)) = :anio)")
+    long contarPorCategoriaYAnio(@Param("categoria") Categoria categoria,
+                                 @Param("anio") Integer anio);
+
     List<EventoCalendario> findByCategoriaOrderByFechaInicioAsc(Categoria categoria);
 
     List<EventoCalendario> findByCircuitoContainingIgnoreCase(String circuito);

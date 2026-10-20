@@ -37,7 +37,17 @@ import { PilotoPublico, PilotosService } from '../../core/pilotos.service';
 
         <div>
           <label for="f-escuderia">Escuderia</label>
-          <input id="f-escuderia" [(ngModel)]="filtroEscuderia" (ngModelChange)="cargar()" />
+          <input
+            id="f-escuderia"
+            type="text"
+            placeholder="Nombre de la escuderia"
+            [(ngModel)]="filtroEscuderia"
+            (ngModelChange)="cargar()"
+          />
+        </div>
+
+        <div class="acciones">
+          <button type="button" class="secundario" (click)="limpiarFiltros()">Limpiar</button>
         </div>
       </div>
     </section>
@@ -106,13 +116,20 @@ export class PilotosPublicosComponent {
   cargar(): void {
     const categoriaId = this.filtroCategoria ? Number(this.filtroCategoria) : undefined;
     const temporadaId = this.filtroTemporada ? Number(this.filtroTemporada) : undefined;
-    const escuderiaId = this.filtroEscuderia ? Number(this.filtroEscuderia) : undefined;
+    const escuderia = this.filtroEscuderia.trim() || undefined;
 
     this.cargando.set(true);
-    this.servicio.listarPublico({ categoriaId, temporadaId, escuderiaId }).subscribe({
+    this.servicio.listarPublico({ categoriaId, temporadaId, escuderia }).subscribe({
       next: (respuesta) => this.pilotos.set(respuesta ?? []),
       error: () => this.pilotos.set([]),
       complete: () => this.cargando.set(false),
     });
+  }
+
+  limpiarFiltros(): void {
+    this.filtroCategoria = '';
+    this.filtroTemporada = '';
+    this.filtroEscuderia = '';
+    this.cargar();
   }
 }
