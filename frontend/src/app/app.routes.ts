@@ -60,5 +60,17 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/pruebas-neumaticos/pruebas.component').then((m) => m.PruebasComponent),
   },
+  {
+    path: 'controles-tecnicos',
+    title: 'Controles tecnicos · FIA',
+    loadComponent: () =>
+      import('./features/controles-tecnicos/controles.component').then((m) => m.ControlesTecnicosComponent),
+  },
+  {
+    path: 'equipo',
+    title: 'Personal y roles · FIA',
+    canActivate: [authGuard, roleGuard('ADMIN_ESCUDERIA')],
+    loadComponent: () => import('./features/equipo/equipo.component').then((m) => m.EquipoComponent),
+  },
   { path: '**', redirectTo: 'dashboard' },
 ];

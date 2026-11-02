@@ -87,6 +87,7 @@ export interface ResultadoPrueba {
   pruebaId?: number | null;
   escuderia?: string | null;
   piloto?: string | null;
+  compuesto?: string | null;
   mejorTiempo?: string | null;
   vueltas?: number | null;
   posicion?: number | null;
@@ -128,6 +129,53 @@ export interface Escuderia {
   pais?: string | null;
   activa?: boolean;
 }
+
+export type RolEscuderia = 'ADMINISTRADOR' | 'EDITOR' | 'LECTOR';
+
+export interface MiembroEscuderia {
+  usuarioId: number;
+  nombre: string;
+  apellido: string;
+  email: string;
+  username: string;
+  rolGlobal?: string | null;
+  rolEscuderia?: RolEscuderia | null;
+  rolEscuderiaDescripcion?: string | null;
+  puedeActualizarInformacion: boolean;
+}
+
+export type ResultadoControl = 'APTO' | 'NO_APTO';
+
+export interface ControlTecnico {
+  id: number;
+  escuderiaId: number;
+  escuderiaNombre?: string | null;
+  pilotoId?: number | null;
+  pilotoNombre?: string | null;
+  auto: string;
+  fecha: string;
+  elementosVerificados: string;
+  resultado: ResultadoControl;
+  observaciones?: string | null;
+  fechaCreacion?: string | null;
+}
+
+export interface ControlTecnicoPayload {
+  escuderiaId: number;
+  pilotoId?: number | null;
+  auto: string;
+  fecha: string;
+  elementosVerificados: string;
+  resultado: ResultadoControl;
+  observaciones?: string | null;
+}
+
+export const ROLES_ESCUDERIA: { valor: RolEscuderia; etiqueta: string; descripcion: string }[] = [
+  { valor: 'ADMINISTRADOR', etiqueta: 'Administrador', descripcion: 'Puede actualizar la informacion y gestionar el personal' },
+  { valor: 'EDITOR', etiqueta: 'Editor', descripcion: 'Puede actualizar la informacion de la escuderia' },
+  { valor: 'LECTOR', etiqueta: 'Lector', descripcion: 'Solo puede consultar la informacion' },
+];
+
 
 export interface Categoria {
   valor: string;

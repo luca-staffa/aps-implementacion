@@ -31,6 +31,16 @@ interface GrupoEscuderia {
             }
           </select>
         </div>
+
+        <div>
+          <label for="f-escuderia">Escuderia</label>
+          <input
+            id="f-escuderia"
+            [(ngModel)]="escuderia"
+            (ngModelChange)="cargar()"
+            placeholder="Filtrar por escuderia"
+          />
+        </div>
       </div>
 
       <div class="aviso info">
@@ -89,6 +99,7 @@ interface GrupoEscuderia {
                     <tr>
                       <th>Piloto</th>
                       <th>Posicion</th>
+                      <th>Compuesto</th>
                       <th>Mejor tiempo</th>
                       <th>Vueltas</th>
                     </tr>
@@ -98,6 +109,7 @@ interface GrupoEscuderia {
                       <tr>
                         <td>{{ resultado.piloto || '-' }}</td>
                         <td>{{ resultado.posicion ?? '-' }}</td>
+                        <td>{{ resultado.compuesto || '-' }}</td>
                         <td>{{ resultado.mejorTiempo || '-' }}</td>
                         <td>{{ resultado.vueltas ?? '-' }}</td>
                       </tr>
@@ -203,6 +215,7 @@ export class PruebasComponent implements OnInit {
 
   readonly anios: number[] = this.construirAnios();
   anio = new Date().getFullYear();
+  escuderia = '';
 
   readonly pruebas = signal<PruebaNeumatico[]>([]);
   readonly cargando = signal(false);
@@ -216,7 +229,7 @@ export class PruebasComponent implements OnInit {
     this.cargando.set(true);
     this.error.set('');
 
-    this.servicio.listar(Number(this.anio)).subscribe({
+    this.servicio.listar(Number(this.anio), this.escuderia).subscribe({
       next: (pruebas) => this.pruebas.set(pruebas ?? []),
       error: () => {
         this.error.set('No se pudieron cargar las pruebas de neumaticos.');

@@ -5,6 +5,7 @@ public record ResultadoResponse(
         Long pruebaId,
         String escuderia,
         String piloto,
+        String compuesto,
         String mejorTiempo,
         Integer vueltas,
         Integer posicion

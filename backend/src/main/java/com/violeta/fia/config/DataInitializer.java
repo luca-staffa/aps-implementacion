@@ -2,6 +2,7 @@ package com.violeta.fia.config;
 
 import com.violeta.fia.domain.Escuderia;
 import com.violeta.fia.domain.Rol;
+import com.violeta.fia.domain.RolEscuderia;
 import com.violeta.fia.domain.RolNombre;
 import com.violeta.fia.domain.Usuario;
 import com.violeta.fia.repository.EscuderiaRepository;
@@ -37,18 +38,25 @@ public class DataInitializer {
             Escuderia mclaren = asegurarEscuderia(escuderiaRepository, "McLaren", "Reino Unido");
 
             asegurarUsuario(usuarioRepository, passwordEncoder, "Admin", "FIA",
-                    "admin@fia.com", "admin.fia", adminFia, null);
+                    "admin@fia.com", "admin.fia", adminFia, null, null);
             asegurarUsuario(usuarioRepository, passwordEncoder, "Admin", "Escuderia",
-                    "escuderia@fia.com", "admin.escuderia", adminEscuderia, alpine);
+                    "escuderia@fia.com", "admin.escuderia", adminEscuderia, alpine, RolEscuderia.ADMINISTRADOR);
             asegurarUsuario(usuarioRepository, passwordEncoder, "Usuario", "Publico",
-                    "publico@fia.com", "publico", publico, null);
+                    "publico@fia.com", "publico", publico, null, null);
             asegurarUsuario(usuarioRepository, passwordEncoder, "Piloto", "Demo",
-                    "piloto@fia.com", "piloto.demo", publico, ferrari);
+                    "piloto@fia.com", "piloto.demo", publico, ferrari, null);
 
             asegurarUsuario(usuarioRepository, passwordEncoder, "Escuderia", "Ferrari",
-                    "ferrari@fia.com", "admin.ferrari", adminEscuderia, ferrari);
+                    "ferrari@fia.com", "admin.ferrari", adminEscuderia, ferrari, RolEscuderia.ADMINISTRADOR);
             asegurarUsuario(usuarioRepository, passwordEncoder, "Escuderia", "McLaren",
-                    "mclaren@fia.com", "admin.mclaren", adminEscuderia, mclaren);
+                    "mclaren@fia.com", "admin.mclaren", adminEscuderia, mclaren, RolEscuderia.ADMINISTRADOR);
+
+            asegurarUsuario(usuarioRepository, passwordEncoder, "Editor", "Alpine",
+                    "editor.alpine@fia.com", "editor.alpine", publico, alpine, RolEscuderia.EDITOR);
+            asegurarUsuario(usuarioRepository, passwordEncoder, "Lector", "Alpine",
+                    "lector.alpine@fia.com", "lector.alpine", publico, alpine, RolEscuderia.LECTOR);
+            asegurarUsuario(usuarioRepository, passwordEncoder, "Editor", "Ferrari",
+                    "editor.ferrari@fia.com", "editor.ferrari", publico, ferrari, RolEscuderia.EDITOR);
         };
     }
 
@@ -68,7 +76,8 @@ public class DataInitializer {
     private void asegurarUsuario(UsuarioRepository usuarioRepository,
                                  PasswordEncoder passwordEncoder,
                                  String nombre, String apellido,
-                                 String email, String username, Rol rol, Escuderia escuderia) {
+                                 String email, String username, Rol rol, Escuderia escuderia,
+                                 RolEscuderia rolEscuderia) {
         Usuario usuario = usuarioRepository.findByUsername(username).orElseGet(Usuario::new);
         usuario.setNombre(nombre);
         usuario.setApellido(apellido);
@@ -77,6 +86,7 @@ public class DataInitializer {
         usuario.setPassword(passwordEncoder.encode(PASSWORD_INICIAL));
         usuario.setRol(rol);
         usuario.setEscuderia(escuderia);
+        usuario.setRolEscuderia(rolEscuderia);
         usuario.setActivo(true);
         usuarioRepository.save(usuario);
     }

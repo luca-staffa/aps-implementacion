@@ -27,6 +27,9 @@ public class ResultadoPrueba {
     @Column(name = "piloto", length = 150)
     private String piloto;
 
+    @Column(name = "compuesto", length = 50)
+    private String compuesto;
+
     @Column(name = "mejor_tiempo", length = 50)
     private String mejorTiempo;
 
@@ -69,6 +72,14 @@ public class ResultadoPrueba {
 
     public void setPiloto(String piloto) {
         this.piloto = piloto;
+    }
+
+    public String getCompuesto() {
+        return compuesto;
+    }
+
+    public void setCompuesto(String compuesto) {
+        this.compuesto = compuesto;
     }
 
     public String getMejorTiempo() {

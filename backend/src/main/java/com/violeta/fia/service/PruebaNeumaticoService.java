@@ -21,22 +21,26 @@ public class PruebaNeumaticoService {
     }
 
     @Transactional(readOnly = true)
-    public List<PruebaResponse> listar(Integer anio) {
+    public List<PruebaResponse> listar(Integer anio, String escuderia) {
         List<PruebaNeumatico> pruebas = (anio != null)
                 ? pruebaRepository.findByAnioOrderByFechaInicioAsc(anio)
                 : pruebaRepository.findAllByOrderByAnioDescFechaInicioAsc();
-        return pruebas.stream().map(this::aResponse).toList();
+        return pruebas.stream().map(prueba -> aResponse(prueba, escuderia)).toList();
     }
 
     @Transactional(readOnly = true)
     public PruebaResponse obtener(Long id) {
         PruebaNeumatico prueba = pruebaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Prueba no encontrada con id: " + id));
-        return aResponse(prueba);
+        return aResponse(prueba, null);
     }
 
-    private PruebaResponse aResponse(PruebaNeumatico prueba) {
+    private PruebaResponse aResponse(PruebaNeumatico prueba, String escuderia) {
+        String filtroEscuderia = (escuderia != null && !escuderia.isBlank()) ? escuderia.trim().toLowerCase() : null;
         List<ResultadoResponse> resultados = prueba.getResultados().stream()
+                .filter(resultado -> filtroEscuderia == null
+                        || (resultado.getEscuderia() != null
+                        && resultado.getEscuderia().toLowerCase().contains(filtroEscuderia)))
                 .map(this::aResultado)
                 .toList();
 
@@ -58,6 +62,7 @@ public class PruebaNeumaticoService {
                 resultado.getPrueba() != null ? resultado.getPrueba().getId() : null,
                 resultado.getEscuderia(),
                 resultado.getPiloto(),
+                resultado.getCompuesto(),
                 resultado.getMejorTiempo(),
                 resultado.getVueltas(),
                 resultado.getPosicion());

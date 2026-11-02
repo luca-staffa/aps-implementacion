@@ -9,10 +9,13 @@ import { PruebaNeumatico } from './models';
 export class PruebasService {
   private readonly api = inject(ApiService);
 
-  listar(anio?: number): Observable<PruebaNeumatico[]> {
+  listar(anio?: number, escuderia?: string): Observable<PruebaNeumatico[]> {
     let params = new HttpParams();
     if (anio) {
       params = params.set('anio', anio.toString());
+    }
+    if (escuderia && escuderia.trim()) {
+      params = params.set('escuderia', escuderia.trim());
     }
     return this.api.get<PruebaNeumatico[]>('/pruebas-neumaticos', params);
   }

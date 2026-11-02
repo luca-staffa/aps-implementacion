@@ -25,13 +25,18 @@ import { AuthService } from './core/auth.service';
           @if (auth.esAdminFia()) {
             <a routerLink="/sanciones" routerLinkActive="activo">Sanciones</a>
           }
+          @if (auth.esAdminEscuderia()) {
+            <a routerLink="/equipo" routerLinkActive="activo">Personal y roles</a>
+          }
           <a routerLink="/pilotos/publico" routerLinkActive="activo">Pilotos publicos</a>
           <a routerLink="/pruebas-neumaticos" routerLinkActive="activo">Pruebas de neumaticos</a>
+          <a routerLink="/controles-tecnicos" routerLinkActive="activo">Controles tecnicos</a>
           <a routerLink="/perfil" routerLinkActive="activo">Mi perfil</a>
         } @else {
           <a routerLink="/calendario" routerLinkActive="activo">Calendario</a>
           <a routerLink="/pilotos/publico" routerLinkActive="activo">Pilotos publicos</a>
           <a routerLink="/pruebas-neumaticos" routerLinkActive="activo">Pruebas de neumaticos</a>
+          <a routerLink="/controles-tecnicos" routerLinkActive="activo">Controles tecnicos</a>
         }
       </nav>
 

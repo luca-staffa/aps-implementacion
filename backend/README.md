@@ -29,8 +29,15 @@ Las migraciones de `src/main/resources/db/migration` se ejecutan automaticamente
 
 - `V1__schema.sql`: creacion de tablas e indices.
 - `V2__seed.sql`: datos iniciales (roles, usuarios, calendario, sanciones y pruebas de neumaticos).
+- `V3__categoria_temporada_atributos.sql`: catalogo de categorias, temporadas y atributos.
+- `V4__pilotos_escuderias.sql`: escuderias y entidad piloto.
+- `V5__perfil_y_sanciones.sql`: telefono de usuario y campos de sancion.
+- `V6__calendario_demo.sql`, `V7__sanciones_piloto_escuderia.sql`, `V8__temporadas_demo.sql`: datos demo y ajustes.
+- `V9__controles_tecnicos.sql`: tabla `control_tecnico` y controles de demo.
+- `V10__roles_escuderia.sql`: columna `usuario.rol_escuderia` con sus roles internos.
+- `V11__prueba_compuesto.sql`: compuesto de neumático en cada resultado de prueba.
 
-Al arrancar, `DataInitializer` garantiza los roles y las credenciales iniciales.
+Al arrancar, `DataInitializer` garantiza los roles, las credenciales iniciales y los miembros demo de cada escuderia.
 
 ## Configuracion
 
@@ -68,11 +75,15 @@ Si no tenes Maven instalado, el proyecto incluye el Maven Wrapper:
 
 ## Credenciales de prueba
 
-| Usuario | Contrasena | Rol |
-| --- | --- | --- |
-| `admin.fia` | `Password123!` | `ADMIN_FIA` |
-| `admin.escuderia` | `Password123!` | `ADMIN_ESCUDERIA` |
-| `publico` | `Password123!` | `PUBLICO` |
+| Usuario | Contrasena | Rol global | Escuderia / rol interno |
+| --- | --- | --- | --- |
+| `admin.fia` | `Password123!` | `ADMIN_FIA` | - |
+| `admin.escuderia` | `Password123!` | `ADMIN_ESCUDERIA` | Alpine / `ADMINISTRADOR` |
+| `admin.ferrari` | `Password123!` | `ADMIN_ESCUDERIA` | Ferrari / `ADMINISTRADOR` |
+| `editor.alpine` | `Password123!` | `PUBLICO` | Alpine / `EDITOR` |
+| `lector.alpine` | `Password123!` | `PUBLICO` | Alpine / `LECTOR` |
+| `editor.ferrari` | `Password123!` | `PUBLICO` | Ferrari / `EDITOR` |
+| `publico` | `Password123!` | `PUBLICO` | - |
 
 ## Endpoints
 
@@ -95,13 +106,28 @@ Si no tenes Maven instalado, el proyecto incluye el Maven Wrapper:
 | GET | `/api/usuarios` | `ADMIN_FIA` |
 | GET | `/api/usuarios/{id}` | `ADMIN_FIA` |
 
-### Escuderias
+### Escuderias y roles internos
 
 | Metodo | Ruta | Acceso |
 | --- | --- | --- |
-| GET | `/api/escuderias` | `ADMIN_FIA`, `ADMIN_ESCUDERIA` |
+| GET | `/api/escuderias` | Publico |
+| PUT | `/api/escuderias/{id}` | `ADMIN_FIA` o miembro con rol `ADMINISTRADOR`/`EDITOR` de esa escuderia |
+| GET | `/api/escuderias/miembros` | `ADMIN_ESCUDERIA` (solo su escuderia) |
+| PUT | `/api/escuderias/miembros/{usuarioId}` | `ADMIN_ESCUDERIA` (solo su escuderia) |
+| DELETE | `/api/escuderias/miembros/{usuarioId}/rol` | `ADMIN_ESCUDERIA` (solo su escuderia) |
 
-Se usa, junto con `GET /api/pilotos`, para poblar los selectores de piloto y escuderia al registrar sanciones.
+El rol global (`ADMIN_FIA`, `ADMIN_ESCUDERIA`, `PUBLICO`) define el acceso a la plataforma; el rol de escuderia (`ADMINISTRADOR`, `EDITOR`, `LECTOR`) define que puede hacer un miembro dentro de su escuderia. El administrativo de escuderia solo puede ver y modificar los roles de los miembros de su propia escuderia. Un miembro con rol `ADMINISTRADOR` o `EDITOR` puede actualizar la informacion de su escuderia; `LECTOR` solo consulta.
+
+### Controles tecnicos
+
+| Metodo | Ruta | Acceso |
+| --- | --- | --- |
+| GET | `/api/controles-tecnicos?escuderiaId=` | Publico |
+| GET | `/api/controles-tecnicos/{id}` | Publico |
+| POST | `/api/controles-tecnicos` | `ADMIN_FIA` |
+| PUT | `/api/controles-tecnicos/{id}` | `ADMIN_FIA` |
+
+Un control tecnico registra el `escuderiaId`, el `auto`, la `fecha`, los `elementosVerificados`, el `resultado` (`APTO` / `NO_APTO`) y `observaciones` opcionales. El alta y la modificacion quedan restringidas al administrativo de la FIA; las escuderias y el publico solo consultan.
 
 ### Sanciones
 
@@ -129,8 +155,10 @@ El modulo de sanciones esta restringido al Administrador del sistema (`ADMIN_FIA
 
 | Metodo | Ruta | Acceso |
 | --- | --- | --- |
-| GET | `/api/pruebas-neumaticos?anio=` | Publico |
+| GET | `/api/pruebas-neumaticos?anio=&escuderia=` | Publico |
 | GET | `/api/pruebas-neumaticos/{id}` | Publico |
+
+El filtro opcional `escuderia` devuelve unicamente los resultados de las escuderias cuyo nombre contenga el valor indicado.
 
 ## Autenticacion JWT
 
@@ -145,13 +173,15 @@ El token se expira por tiempo absoluto (`app.jwt.expiracion`) y por inactividad 
 ## Tests
 
 ```bash
-# Suite completa: 31 tests
+# Suite completa: 93 tests
 mvn test
 # o bien
 ./mvnw test
 ```
 
 Incluye tests de autenticacion (login/registro/401/403), sanciones (ABM, validacion, permisos),
-pruebas de neumaticos, filtros de calendario, registro de "Visto" y expiracion por inactividad.
+pilotos (ABM y limites), pruebas de neumaticos (incluido el filtro por escuderia), filtros de
+calendario, registro de "Visto", controles tecnicos (ABM, validacion y permisos), asignacion de
+roles de escuderia y expiracion por inactividad.
 
-Los tests usan H2 en memoria con el perfil `test` (`src/test/resources/application-test.yml`), Flyway deshabilitado y `ddl-auto=create-drop`.
+Los tests usan H2 en memoria con el perfil `test` (`src/test/resources/application-test.yml`), Flyway habilitado y `ddl-auto=validate`.

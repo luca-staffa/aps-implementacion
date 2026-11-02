@@ -44,6 +44,7 @@ class PruebaNeumaticoControllerTest extends BaseIntegrationTest {
         resultado.setPrueba(primera);
         resultado.setEscuderia("Escuderia Alfa");
         resultado.setPiloto("Piloto Uno");
+        resultado.setCompuesto("Blando");
         resultado.setMejorTiempo("1:18.452");
         resultado.setVueltas(62);
         resultado.setPosicion(1);
@@ -74,6 +75,7 @@ class PruebaNeumaticoControllerTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$[0].avisoPublicado").value(true))
                 .andExpect(jsonPath("$[0].resultados[0].escuderia").value("Escuderia Alfa"))
                 .andExpect(jsonPath("$[0].resultados[0].piloto").value("Piloto Uno"))
+                .andExpect(jsonPath("$[0].resultados[0].compuesto").value("Blando"))
                 .andExpect(jsonPath("$[0].resultados[0].posicion").value(1));
     }
 
@@ -89,5 +91,27 @@ class PruebaNeumaticoControllerTest extends BaseIntegrationTest {
     void obtenerInexistenteDevuelve404() throws Exception {
         mockMvc.perform(get("/api/pruebas-neumaticos/999999"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void filtroPorEscuderiaDevuelveSoloLosResultadosDeLaEscuderia() throws Exception {
+        PruebaNeumatico primera = pruebaRepository.findById(idPrimera).orElseThrow();
+
+        ResultadoPrueba segundo = new ResultadoPrueba();
+        segundo.setPrueba(primera);
+        segundo.setEscuderia("Escuderia Beta");
+        segundo.setPiloto("Piloto Dos");
+        segundo.setCompuesto("Medio");
+        segundo.setMejorTiempo("1:18.910");
+        segundo.setVueltas(58);
+        segundo.setPosicion(2);
+        resultadoRepository.save(segundo);
+
+        mockMvc.perform(get("/api/pruebas-neumaticos")
+                        .param("anio", "2031")
+                        .param("escuderia", "Beta"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].resultados.length()").value(1))
+                .andExpect(jsonPath("$[0].resultados[0].escuderia").value("Escuderia Beta"));
     }
 }

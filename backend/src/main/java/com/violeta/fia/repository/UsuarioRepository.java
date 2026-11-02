@@ -3,6 +3,7 @@ package com.violeta.fia.repository;
 import com.violeta.fia.domain.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
@@ -14,4 +15,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
     boolean existsByUsername(String username);
 
     boolean existsByEmail(String email);
+
+    List<Usuario> findByEscuderiaIdOrderByApellidoAscNombreAsc(Long escuderiaId);
 }

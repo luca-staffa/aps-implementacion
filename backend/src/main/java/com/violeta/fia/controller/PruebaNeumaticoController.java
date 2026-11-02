@@ -22,8 +22,9 @@ public class PruebaNeumaticoController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PruebaResponse>> listar(@RequestParam(required = false) Integer anio) {
-        return ResponseEntity.ok(pruebaService.listar(anio));
+    public ResponseEntity<List<PruebaResponse>> listar(@RequestParam(required = false) Integer anio,
+                                                       @RequestParam(required = false) String escuderia) {
+        return ResponseEntity.ok(pruebaService.listar(anio, escuderia));
     }
 
     @GetMapping("/{id}")

@@ -11,4 +11,8 @@ export class EscuderiasService {
   listar(): Observable<Escuderia[]> {
     return this.api.get<Escuderia[]>('/escuderias');
   }
+
+  actualizar(id: number, datos: { nombre: string; pais?: string | null }): Observable<Escuderia> {
+    return this.api.put<Escuderia>(`/escuderias/${id}`, datos);
+  }
 }
